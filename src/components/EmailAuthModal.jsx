@@ -26,14 +26,24 @@ export default function EmailAuthModal({ role, onAuthSuccess }) {
     setError(null);
     try {
       await registerUser(email, role);
-      await sendOTP(email);
-      setInfoMessage(`Real OTP code generated and sent to ${email}`);
+      const res = await sendOTP(email);
+      if (res && res.otp) {
+        setInfoMessage(`🔑 Demo Verification OTP Code: [ ${res.otp} ]`);
+        setOtpDigits(res.otp.split(''));
+      } else {
+        setInfoMessage(`Real OTP code generated and sent to ${email}`);
+      }
       setStep('otp');
     } catch (err) {
       // Even if user exists, proceed to send OTP
       try {
-        await sendOTP(email);
-        setInfoMessage(`Real OTP code sent to ${email}`);
+        const res = await sendOTP(email);
+        if (res && res.otp) {
+          setInfoMessage(`🔑 Demo Verification OTP Code: [ ${res.otp} ]`);
+          setOtpDigits(res.otp.split(''));
+        } else {
+          setInfoMessage(`Real OTP code sent to ${email}`);
+        }
         setStep('otp');
       } catch (sendErr) {
         setError(sendErr.message || 'Failed to send OTP to email.');
@@ -103,9 +113,14 @@ export default function EmailAuthModal({ role, onAuthSuccess }) {
     setError(null);
     setLoading(true);
     try {
-      await sendOTP(email);
-      setInfoMessage(`New OTP code sent to ${email}`);
-      setOtpDigits(['', '', '', '', '', '']);
+      const res = await sendOTP(email);
+      if (res && res.otp) {
+        setInfoMessage(`🔑 Demo Verification OTP Code: [ ${res.otp} ]`);
+        setOtpDigits(res.otp.split(''));
+      } else {
+        setInfoMessage(`New OTP code sent to ${email}`);
+        setOtpDigits(['', '', '', '', '', '']);
+      }
       inputRefs[0].current?.focus();
     } catch (err) {
       setError('Failed to resend OTP.');

@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://codsm.onrender.com/api';
 
 export async function requestAPI(endpoint, method = 'GET', body = null, token = null) {
   const headers = {};
