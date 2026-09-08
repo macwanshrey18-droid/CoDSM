@@ -3,8 +3,15 @@ import { ArrowLeft, CheckCircle2, Clock, Wrench, ShieldCheck, Star } from 'lucid
 import { cancelServiceRequest } from '../services/api';
 
 export default function TrackServiceScreen({ bookingStatus = 'ACCEPTED', worker, onRateTap, onBack }) {
+  const w = worker || {
+    name: 'Darmendra Jodhua',
+    title: 'Master Plumber',
+    rating: 4.9,
+    photoUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200',
+  };
+
   const steps = [
-    { id: 'MATCHED', title: 'Worker Matched', desc: 'Arjun K. assigned to job' },
+    { id: 'MATCHED', title: 'Worker Matched', desc: `${w.name} assigned to job` },
     { id: 'ACCEPTED', title: 'Request Accepted', desc: 'Worker confirmed arrival' },
     { id: 'IN_PROGRESS', title: 'Job In Progress', desc: 'Service currently underway' },
     { id: 'COMPLETED', title: 'Service Completed', desc: 'Job finished & verified' },
@@ -18,13 +25,6 @@ export default function TrackServiceScreen({ bookingStatus = 'ACCEPTED', worker,
     if (stepIdx < currentIdx) return 'completed';
     if (stepIdx === currentIdx) return 'current';
     return 'pending';
-  };
-
-  const w = worker || {
-    name: 'Arjun K.',
-    title: 'Master Plumber',
-    rating: 4.9,
-    photoUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200',
   };
 
   return (
