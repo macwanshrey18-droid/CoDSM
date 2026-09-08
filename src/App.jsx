@@ -202,23 +202,36 @@ export default function App() {
 
       const matchObj = res?.match || res?.serviceRequest?.matchedWorkerId;
 
-      const workerName = matchObj?.name || 'Darmendra Jodhua';
-      const workerPhone = matchObj?.phone || '+91 9876543210';
-      const workerTitle = matchObj?.title || 'Master Plumber';
-      const workerRating = matchObj?.ratingAvg || 4.9;
-      const workerReviews = matchObj?.ratingCount || 18;
-      const distKm = matchObj?.distance ? (matchObj.distance / 1000).toFixed(1) : '0.8';
+      if (matchObj) {
+        const workerName = matchObj.name || 'Coop Verified Worker';
+        const workerPhone = matchObj.phone || '+91 9876543210';
+        const workerTitle = matchObj.title || `${(matchObj.skills?.[0] || 'Plumber')} Specialist`;
+        const workerRating = matchObj.ratingAvg || 4.9;
+        const workerReviews = matchObj.ratingCount || 14;
+        const distKm = matchObj.distance ? (matchObj.distance / 1000).toFixed(1) : '0.8';
 
-      setMatchedWorker({
-        name: workerName,
-        phone: workerPhone,
-        title: workerTitle,
-        rating: workerRating,
-        reviewsCount: workerReviews,
-        distance: `${distKm} km away`,
-        matchScore: '98% Match',
-        photoUrl: matchObj?.photoUrl || 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200',
-      });
+        setMatchedWorker({
+          name: workerName,
+          phone: workerPhone,
+          title: workerTitle,
+          rating: workerRating,
+          reviewsCount: workerReviews,
+          distance: `${distKm} km away`,
+          matchScore: '98% Match',
+          photoUrl: matchObj.photoUrl || 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200',
+        });
+      } else {
+        setMatchedWorker({
+          name: 'Darmendra Jodhua',
+          phone: '+91 9876543210',
+          title: 'Master Plumber',
+          rating: 4.9,
+          reviewsCount: 18,
+          distance: '0.8 km away',
+          matchScore: '98% Match',
+          photoUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200',
+        });
+      }
     } catch (err) {
       console.log('Backend request note:', err.message);
       setMatchedWorker({
