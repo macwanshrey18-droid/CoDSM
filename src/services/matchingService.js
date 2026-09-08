@@ -3,7 +3,7 @@ const WorkerProfile = require('../models/WorkerProfile');
 const executeMatching = async (category, requestLng, requestLat) => {
   const catStr = (category || 'plumbing').toLowerCase();
 
-  // Step 1: Try Mongo $geoNear if 2dsphere index exists
+  // Step 1: Try Mongo $geoNear sorted by most recent active online availability
   try {
     const candidates = await WorkerProfile.aggregate([
       {
@@ -17,6 +17,7 @@ const executeMatching = async (category, requestLng, requestLat) => {
           }
         }
       },
+      { $sort: { "availability.updatedAt": -1, updatedAt: -1, distance: 1 } },
       { $limit: 10 }
     ]);
 
@@ -30,14 +31,14 @@ const executeMatching = async (category, requestLng, requestLat) => {
     console.log('MongoDB geoNear note (using fallback search):', err.message);
   }
 
-  // Step 2: Fallback query on WorkerProfile collection for available workers
+  // Step 2: Fallback query on WorkerProfile collection sorted by most recently updated online worker
   try {
     const availableWorkers = await WorkerProfile.find({
       $or: [
         { "availability.status": "available" },
-        { "availability.status": { $ne: "busy" } }
+        { "availability.status": { $ne: "unavailable" } }
       ]
-    });
+    }).sort({ "availability.updatedAt": -1, updatedAt: -1 });
 
     if (availableWorkers && availableWorkers.length > 0) {
       const skillMatch = availableWorkers.find(w =>
@@ -46,14 +47,14 @@ const executeMatching = async (category, requestLng, requestLat) => {
       return skillMatch || availableWorkers[0];
     }
 
-    // Step 3: Find ANY worker profile in MongoDB Atlas
-    const anyWorker = await WorkerProfile.findOne();
-    if (anyWorker) return anyWorker;
+    // Step 3: Find ANY worker profile in MongoDB Atlas sorted by latest update
+    const latestWorker = await WorkerProfile.findOne().sort({ updatedAt: -1 });
+    if (latestWorker) return latestWorker;
   } catch (err) {
     console.log('Worker matching fallback note:', err.message);
   }
 
-  // Step 4: Fallback return structured available worker object (Darmendra Jodhua / Master Plumber)
+  // Step 4: Fallback return default available worker object
   return {
     _id: 'wrk_darmendra_108',
     name: 'Darmendra Jodhua',

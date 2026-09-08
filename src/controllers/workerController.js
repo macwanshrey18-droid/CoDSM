@@ -26,7 +26,7 @@ exports.getProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, photoUrl, skills, location, certifications } = req.body;
+    const { name, phone, photoUrl, skills, location, certifications } = req.body;
     
     let profile = await WorkerProfile.findOne({ userId: req.user._id });
     
@@ -35,10 +35,14 @@ exports.updateProfile = async (req, res) => {
     }
 
     if (name) profile.name = name;
+    if (phone) profile.phone = phone;
     if (photoUrl) profile.photoUrl = photoUrl;
     if (skills) profile.skills = skills;
     if (location) profile.location = location; // { type: 'Point', coordinates: [lng, lat] }
     if (certifications) profile.certifications = certifications;
+
+    // Automatically mark worker as active online upon profile update
+    profile.availability = { status: 'available', updatedAt: Date.now() };
 
     await profile.save();
     res.status(200).json(profile);
