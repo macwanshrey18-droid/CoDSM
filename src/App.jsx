@@ -221,36 +221,22 @@ export default function App() {
           photoUrl: matchObj.photoUrl || 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200',
         });
       } else {
-        setMatchedWorker({
-          name: 'Darmendra Jodhua',
-          phone: '+91 9876543210',
-          title: 'Master Plumber',
-          rating: 4.9,
-          reviewsCount: 18,
-          distance: '0.8 km away',
-          matchScore: '98% Match',
-          photoUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200',
-        });
+        setMatchedWorker(null);
       }
     } catch (err) {
       console.log('Backend request note:', err.message);
-      setMatchedWorker({
-        name: 'Darmendra Jodhua',
-        phone: '+91 9876543210',
-        title: 'Master Plumber',
-        rating: 4.9,
-        reviewsCount: 18,
-        distance: '0.8 km away',
-        matchScore: '98% Match',
-        photoUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200',
-      });
+      setMatchedWorker(null);
     }
   };
 
   // 6. Radar Loader Finishes
   const handleRadarMatchFound = () => {
-    setCurrentScreen('household_home');
-    setShowAssignPopup(true);
+    if (matchedWorker) {
+      setCurrentScreen('household_home');
+      setShowAssignPopup(true);
+    } else {
+      setCurrentScreen('no_match');
+    }
   };
 
   // 7. Confirm Worker Assignment
