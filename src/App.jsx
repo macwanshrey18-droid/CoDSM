@@ -24,6 +24,7 @@ import WorkerEarningsTab from './components/WorkerEarningsTab';
 import WorkerProfileEdit from './components/WorkerProfileEdit';
 
 import { createServiceRequest, acceptWorkerRequest, completeWorkerRequest, getUserProfile, deleteUserAccount, getWorkerProfile } from './services/api';
+import { initSocket, subscribeToIncomingRequests } from './services/socket';
 
 export default function App() {
   // Navigation State
@@ -55,6 +56,7 @@ export default function App() {
       getUserProfile(savedToken)
         .then((user) => {
           if (user && user.email) {
+            initSocket(user._id);
             const roleToUse = user.role || 'household';
             setSelectedRole(roleToUse);
             if (roleToUse === 'household') {
@@ -64,6 +66,10 @@ export default function App() {
               }
             } else {
               setWorkerToken(savedToken);
+              subscribeToIncomingRequests(user._id, (alertData) => {
+                console.log('Real-time live worker incoming request received:', alertData);
+                setInAppJobAlert(alertData);
+              });
               getWorkerProfile(savedToken)
                 .then((wp) => {
                   setWorkerProfile({
@@ -108,6 +114,10 @@ export default function App() {
       localStorage.setItem('codsm_token', token);
     }
 
+    if (user?._id) {
+      initSocket(user._id);
+    }
+
     if (roleToUse === 'household') {
       setHouseholdToken(token);
       if (user?.name) {
@@ -118,6 +128,12 @@ export default function App() {
       }
     } else {
       setWorkerToken(token);
+      if (user?._id) {
+        subscribeToIncomingRequests(user._id, (alertData) => {
+          console.log('Real-time live worker incoming request received:', alertData);
+          setInAppJobAlert(alertData);
+        });
+      }
       getWorkerProfile(token)
         .then((wp) => {
           setWorkerProfile({
