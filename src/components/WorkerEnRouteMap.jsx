@@ -65,7 +65,9 @@ export default function WorkerEnRouteMap({ worker, bookingId, onTrackStatusTap }
       {showAssignedBanner && (
         <div className="absolute top-3 left-3 right-3 bg-indigo-900 text-white p-3 rounded-2xl shadow-2xl z-30 border border-indigo-700 flex items-center justify-between animate-slide-up">
           <div className="flex items-center space-x-3">
-            <img src={w.photoUrl} alt={w.name} className="w-10 h-10 rounded-full object-cover border-2 border-emerald-400" />
+            <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-xs">
+              {w.name.slice(0, 2).toUpperCase() || 'WP'}
+            </div>
             <div>
               <h4 className="text-xs font-bold flex items-center">
                 {w.name} Assigned! <CheckCircle className="w-3.5 h-3.5 text-emerald-400 ml-1" />
@@ -100,7 +102,9 @@ export default function WorkerEnRouteMap({ worker, bookingId, onTrackStatusTap }
       <div className="bg-white p-4 shadow-2xl border-t border-slate-200 z-20">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3">
-            <img src={w.photoUrl} alt={w.name} className="w-11 h-11 rounded-full object-cover border-2 border-indigo-600 shadow" />
+            <div className="w-11 h-11 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow">
+              {w.name.slice(0, 2).toUpperCase() || 'WP'}
+            </div>
             <div>
               <h4 className="text-sm font-bold text-slate-900 flex items-center">
                 {w.name} <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 ml-1" />

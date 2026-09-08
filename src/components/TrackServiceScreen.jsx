@@ -41,7 +41,9 @@ export default function TrackServiceScreen({ bookingStatus = 'ACCEPTED', worker,
         {/* Assigned Worker Info Header */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs mb-5 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <img src={w.photoUrl} alt={w.name} className="w-11 h-11 rounded-full object-cover border-2 border-indigo-600" />
+            <div className="w-11 h-11 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+              {w.name.slice(0, 2).toUpperCase() || 'WP'}
+            </div>
             <div>
               <h4 className="text-xs font-bold text-slate-900 flex items-center">
                 {w.name} <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 ml-1" />

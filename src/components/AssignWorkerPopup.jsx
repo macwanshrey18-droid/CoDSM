@@ -27,7 +27,9 @@ export default function AssignWorkerPopup({ worker, onConfirm, onFindAnother }) 
         <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 text-left mb-4 shadow-xs">
           <div className="flex items-center space-x-3 mb-3">
             <div className="relative">
-              <img src={w.photoUrl} alt={w.name} className="w-13 h-13 rounded-full object-cover border-2 border-indigo-600 shadow" />
+              <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow">
+                {w.name.slice(0, 2).toUpperCase() || 'WP'}
+              </div>
               <div className="absolute bottom-0 right-0 bg-emerald-600 text-white rounded-full p-0.5 border border-white">
                 <ShieldCheck className="w-3 h-3" />
               </div>

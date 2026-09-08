@@ -158,11 +158,9 @@ export default function WorkerDashboard({
       {/* Worker Portal Header */}
       <div className="bg-white px-4 py-3 border-b border-slate-200 flex items-center justify-between z-10 shadow-xs">
         <div className="flex items-center space-x-2.5">
-          <img
-            src="https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200"
-            alt={workerName}
-            className="w-9 h-9 rounded-full object-cover border border-indigo-600 shadow-xs"
-          />
+          <div className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-xs">
+            {workerName.slice(0, 2).toUpperCase() || 'WP'}
+          </div>
           <div>
             <h2 className="text-sm font-bold text-indigo-900 leading-none">Worker Portal</h2>
             <span className="text-[10px] text-emerald-600 font-semibold">Coop Member #108</span>

@@ -96,11 +96,9 @@ export default function SmartMatchingScreen({ matchData, onBack, onConfirmBookin
             <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-200/80 mb-4 text-left shadow-xs">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="relative">
-                  <img
-                    src={worker.photoUrl}
-                    alt={worker.name}
-                    className="w-13 h-13 rounded-full object-cover border-2 border-indigo-600 shadow"
-                  />
+                  <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow">
+                    {worker.name.slice(0, 2).toUpperCase() || 'WP'}
+                  </div>
                   <div className="absolute bottom-0 right-0 bg-emerald-600 text-white rounded-full p-0.5 border border-white">
                     <ShieldCheck className="w-3 h-3" />
                   </div>
@@ -151,11 +149,9 @@ export default function SmartMatchingScreen({ matchData, onBack, onConfirmBookin
       <div className="bg-white p-4 shadow-xl border-t border-slate-200 z-20">
         <div className="flex items-center justify-between mb-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
           <div className="flex items-center space-x-2.5">
-            <img
-              src={worker.photoUrl}
-              alt={worker.name}
-              className="w-9 h-9 rounded-full object-cover border border-indigo-600"
-            />
+            <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+              {worker.name.slice(0, 2).toUpperCase() || 'WP'}
+            </div>
             <div>
               <h5 className="text-xs font-bold text-slate-900">{worker.name}</h5>
               <p className="text-[10px] text-slate-500">{worker.title} • {worker.distance}</p>

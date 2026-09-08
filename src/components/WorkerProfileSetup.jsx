@@ -66,7 +66,6 @@ export default function WorkerProfileSetup({ token, initialProfile, onComplete }
         await updateWorkerProfile(activeToken, {
           name,
           phone,
-          photoUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200',
           skills: selectedSkills,
           location: { type: 'Point', coordinates },
         }).catch((err) => console.log('Worker profile save note:', err.message));
@@ -88,20 +87,7 @@ export default function WorkerProfileSetup({ token, initialProfile, onComplete }
           <h2 className="text-base font-bold text-slate-900 tracking-tight">Worker Profile Setup</h2>
         </div>
 
-        {/* Photo Picker */}
-        <div className="flex flex-col items-center mb-5">
-          <div className="relative">
-            <img
-              src="https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200"
-              alt="Avatar"
-              className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
-            />
-            <button className="absolute bottom-0 right-0 bg-indigo-600 text-white p-1.5 rounded-full shadow border-2 border-white">
-              <Camera className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <span className="text-xs text-slate-500 font-medium mt-1">Upload Profile Photo</span>
-        </div>
+
 
         {error && (
           <div className="mb-4 bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl text-xs flex items-center space-x-2 animate-fade-in">

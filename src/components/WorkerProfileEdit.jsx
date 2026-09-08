@@ -144,11 +144,9 @@ export default function WorkerProfileEdit({ token, workerProfile, onBack, onDele
         {/* Profile Card Header */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex items-center space-x-3 mb-5">
           <div className="relative">
-            <img
-              src="https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200"
-              alt="Arjun"
-              className="w-14 h-14 rounded-full object-cover border-2 border-indigo-600 shadow"
-            />
+            <div className="w-14 h-14 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-base shadow">
+              {name.slice(0, 2).toUpperCase() || 'WP'}
+            </div>
             <div className="absolute bottom-0 right-0 bg-emerald-600 text-white rounded-full p-0.5 border border-white">
               <ShieldCheck className="w-3.5 h-3.5" />
             </div>

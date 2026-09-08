@@ -14,12 +14,8 @@ export default function RateWorkerModal({ worker, onSubmitRating, onClose }) {
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
       <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl border border-slate-100 animate-slide-up">
         {/* Worker Avatar */}
-        <div className="mx-auto w-16 h-16 rounded-full overflow-hidden border-2 border-indigo-600 shadow-md mb-3">
-          <img
-            src={worker?.photoUrl || 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200'}
-            alt="Worker"
-            className="w-full h-full object-cover"
-          />
+        <div className="mx-auto w-16 h-16 rounded-full bg-indigo-600 text-white font-bold text-lg flex items-center justify-center shadow-md mb-3">
+          {(worker?.name || 'WP').slice(0, 2).toUpperCase()}
         </div>
 
         <h3 className="text-lg font-bold text-slate-900">How was your service?</h3>

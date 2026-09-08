@@ -80,11 +80,9 @@ export default function HouseholdHome({ userProfile, matchedWorker, activeReques
             onClick={() => onNavigateToProfile && onNavigateToProfile()}
             className="flex items-center space-x-2.5 cursor-pointer group"
           >
-            <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200"
-              alt={displayName}
-              className="w-10 h-10 rounded-full object-cover border-2 border-indigo-600 shadow-xs group-hover:scale-105 transition-transform"
-            />
+            <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-xs group-hover:scale-105 transition-transform">
+              {displayName.slice(0, 2).toUpperCase() || 'HH'}
+            </div>
             <div>
               <h2 className="text-sm font-bold text-slate-900 leading-none group-hover:text-indigo-600 transition-colors">Good Afternoon, {displayName} 👋</h2>
               <span className="text-[11px] text-slate-500 font-medium flex items-center mt-0.5 max-w-[200px] truncate">
