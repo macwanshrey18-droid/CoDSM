@@ -78,7 +78,7 @@ exports.sendOtp = async (req, res) => {
     // 4. Dispatch Email
     await sendOtpEmail(normalizedEmail, generatedOtp);
 
-    res.status(200).json({ message: `OTP code sent to ${normalizedEmail}` });
+    res.status(200).json({ message: `OTP code sent to ${normalizedEmail}`, otp: generatedOtp });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
