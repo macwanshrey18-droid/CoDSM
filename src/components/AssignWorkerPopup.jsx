@@ -9,7 +9,6 @@ export default function AssignWorkerPopup({ worker, onConfirm, onFindAnother }) 
     reviewsCount: 18,
     distance: '0.8 km away',
     matchScore: '98% Match',
-    photoUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200',
   };
 
   return (

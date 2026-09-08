@@ -56,7 +56,6 @@ export default function WorkerEnRouteMap({ worker, bookingId, onTrackStatusTap }
     name: 'Darmendra Jodhua',
     title: 'Master Plumber',
     rating: 4.9,
-    photoUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200',
   };
 
   return (
