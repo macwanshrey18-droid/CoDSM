@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Star, Save, Phone, Award, Check, ArrowLeft, Trash2, MapPin, Crosshair } from 'lucide-react';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { updateWorkerProfile, updateUserProfile } from '../services/api';
 
@@ -10,6 +10,16 @@ const defaultPinIcon = L.divIcon({
   iconSize: [28, 28],
   iconAnchor: [14, 14],
 });
+
+function RecenterMap({ center }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center && center[0] && center[1]) {
+      map.setView(center, 16);
+    }
+  }, [center, map]);
+  return null;
+}
 
 export default function WorkerProfileEdit({ token, workerProfile, onBack, onDeleteAccount }) {
   const [name, setName] = useState(workerProfile?.name || '');
@@ -22,12 +32,37 @@ export default function WorkerProfileEdit({ token, workerProfile, onBack, onDele
   const [saved, setSaved] = useState(false);
 
   const detectPreciseLocation = () => {
+    setGpsDetecting(true);
+    setGpsStatus('Detecting worker location...');
+
+    const fetchIpFallback = () => {
+      fetch('https://ipapi.co/json/')
+        .then((res) => res.json())
+        .then((ipData) => {
+          if (ipData && ipData.latitude && ipData.longitude) {
+            const lat = Number(ipData.latitude);
+            const lng = Number(ipData.longitude);
+            setCoordinates([lat, lng]);
+            const locationStr = `${ipData.city || 'Navrangpura'}, ${ipData.region || 'Ahmedabad'}`;
+            setAddress(locationStr);
+            setGpsStatus(`Location auto-detected: ${locationStr}`);
+          } else {
+            setGpsStatus('Using default location coordinates.');
+          }
+        })
+        .catch(() => {
+          setGpsStatus('Using default location coordinates.');
+        })
+        .finally(() => {
+          setGpsDetecting(false);
+        });
+    };
+
     if (!('geolocation' in navigator)) {
-      setGpsStatus('Geolocation not supported by browser.');
+      fetchIpFallback();
       return;
     }
-    setGpsDetecting(true);
-    setGpsStatus('Detecting worker precise device GPS location...');
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude, accuracy } = position.coords;
@@ -39,21 +74,20 @@ export default function WorkerProfileEdit({ token, workerProfile, onBack, onDele
             const parts = data.display_name.split(', ');
             setAddress(parts.slice(0, 4).join(', '));
           } else {
-            setAddress(`Navrangpura, Ahmedabad (${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E)`);
+            setAddress(`GPS Pin (${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E)`);
           }
         } catch {
-          setAddress(`Navrangpura, Ahmedabad (${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E)`);
+          setAddress(`GPS Pin (${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E)`);
         } finally {
           setGpsDetecting(false);
-          setGpsStatus(`Precise GPS Acquired! (Accuracy: ±${Math.round(accuracy)}m)`);
+          setGpsStatus(`Precise GPS Acquired! (Accuracy: ±${Math.round(accuracy || 10)}m)`);
         }
       },
       (err) => {
-        console.log('Worker GPS detection note:', err.message);
-        setGpsDetecting(false);
-        setGpsStatus('Using default location coordinates.');
+        console.log('Worker edit GPS detection fallback:', err.message);
+        fetchIpFallback();
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
     );
   };
 
@@ -199,7 +233,7 @@ export default function WorkerProfileEdit({ token, workerProfile, onBack, onDele
               </div>
             )}
 
-            <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center space-x-2 shadow-xs">
+            <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center space-x-2 shadow-xs mb-2">
               <MapPin className="w-4 h-4 text-indigo-600 shrink-0" />
               <input
                 type="text"
@@ -209,6 +243,20 @@ export default function WorkerProfileEdit({ token, workerProfile, onBack, onDele
                 className="w-full text-xs font-bold text-slate-900 focus:outline-none bg-transparent"
                 required
               />
+            </div>
+
+            <div className="w-full h-32 rounded-xl overflow-hidden border border-slate-200 shadow-2xs relative">
+              <MapContainer key={`${coordinates[0]}-${coordinates[1]}`} center={coordinates} zoom={16} zoomControl={false} style={{ width: '100%', height: '100%' }}>
+                <RecenterMap center={coordinates} />
+                <TileLayer
+                  url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+                  attribution="&copy; Google Maps India"
+                />
+                <Marker position={coordinates} icon={defaultPinIcon} />
+              </MapContainer>
+              <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded-md text-[10px] font-extrabold text-slate-800 shadow border border-slate-200/80">
+                📍 GPS: {coordinates[0].toFixed(4)} N, {coordinates[1].toFixed(4)} E
+              </div>
             </div>
           </div>
 

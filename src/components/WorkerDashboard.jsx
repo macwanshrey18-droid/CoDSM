@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Briefcase, DollarSign, Star, CheckCircle, XCircle, LayoutGrid, Clock, UserCheck, MapPin, Crosshair } from 'lucide-react';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { getWorkerProfile, getWorkerEarnings, updateWorkerAvailability } from '../services/api';
 
@@ -10,6 +10,16 @@ const defaultPinIcon = L.divIcon({
   iconSize: [28, 28],
   iconAnchor: [14, 14],
 });
+
+function RecenterMap({ center }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center && center[0] && center[1]) {
+      map.setView(center, 16);
+    }
+  }, [center, map]);
+  return null;
+}
 
 export default function WorkerDashboard({
   token,
@@ -45,7 +55,7 @@ export default function WorkerDashboard({
             }
           }
         })
-        .catch((err) => console.log('Worker dashboard profile note:', err.message));
+        .catch((err) => console.log('Worker dashboard profile load note:', err.message));
 
       getWorkerEarnings(activeToken)
         .then((e) => {
@@ -80,12 +90,37 @@ export default function WorkerDashboard({
   const workerName = profileData?.name || workerProfile?.name || 'Worker';
 
   const detectPreciseLocation = () => {
+    setGpsDetecting(true);
+    setGpsStatus('Detecting worker precise device location...');
+
+    const fetchIpFallback = () => {
+      fetch('https://ipapi.co/json/')
+        .then((res) => res.json())
+        .then((ipData) => {
+          if (ipData && ipData.latitude && ipData.longitude) {
+            const lat = Number(ipData.latitude);
+            const lng = Number(ipData.longitude);
+            setCoordinates([lat, lng]);
+            const locationStr = `${ipData.city || 'Navrangpura'}, ${ipData.region || 'Ahmedabad'}`;
+            setCurrentAddress(locationStr);
+            setGpsStatus(`Location auto-detected: ${locationStr}`);
+          } else {
+            setGpsStatus('Using default location coordinates.');
+          }
+        })
+        .catch(() => {
+          setGpsStatus('Using default location coordinates.');
+        })
+        .finally(() => {
+          setGpsDetecting(false);
+        });
+    };
+
     if (!('geolocation' in navigator)) {
-      setGpsStatus('Geolocation not supported by browser.');
+      fetchIpFallback();
       return;
     }
-    setGpsDetecting(true);
-    setGpsStatus('Detecting worker precise device GPS location...');
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude, accuracy } = position.coords;
@@ -97,21 +132,20 @@ export default function WorkerDashboard({
             const parts = data.display_name.split(', ');
             setCurrentAddress(parts.slice(0, 4).join(', '));
           } else {
-            setCurrentAddress(`Navrangpura, Ahmedabad (${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E)`);
+            setCurrentAddress(`GPS Pin (${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E)`);
           }
         } catch {
-          setCurrentAddress(`Navrangpura, Ahmedabad (${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E)`);
+          setCurrentAddress(`GPS Pin (${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E)`);
         } finally {
           setGpsDetecting(false);
-          setGpsStatus(`Precise GPS Acquired! (Accuracy: ±${Math.round(accuracy)}m)`);
+          setGpsStatus(`Precise GPS Acquired! (Accuracy: ±${Math.round(accuracy || 10)}m)`);
         }
       },
       (err) => {
-        console.log('Worker GPS detection note:', err.message);
-        setGpsDetecting(false);
-        setGpsStatus('Using default location coordinates.');
+        console.log('Worker GPS detection fallback:', err.message);
+        fetchIpFallback();
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
     );
   };
 
@@ -211,6 +245,7 @@ export default function WorkerDashboard({
 
               <div className="w-full h-32 rounded-xl overflow-hidden border border-slate-200 shadow-2xs relative">
                 <MapContainer key={`${coordinates[0]}-${coordinates[1]}`} center={coordinates} zoom={16} zoomControl={false} style={{ width: '100%', height: '100%' }}>
+                  <RecenterMap center={coordinates} />
                   <TileLayer
                     url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
                     attribution="&copy; Google Maps India"
