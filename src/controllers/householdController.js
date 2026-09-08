@@ -25,7 +25,18 @@ exports.createRequest = async (req, res) => {
       serviceRequest.status = 'matched';
       await serviceRequest.save();
       
-      // Optionally pre-create booking here, or wait for household confirm
+      // Notify matched worker in real-time via WebSocket socket room
+      if (match.userId) {
+        notifyWorkerMatched(req.app.get('io'), match.userId, {
+          _id: serviceRequest._id,
+          category: serviceRequest.category,
+          location: serviceRequest.location,
+          requestedTime: serviceRequest.requestedTime,
+          householdPhone: req.user.phone,
+          price: '₹450'
+        });
+      }
+
       res.status(201).json({ serviceRequest, match });
     } else {
       serviceRequest.status = 'no_match';
