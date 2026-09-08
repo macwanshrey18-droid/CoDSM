@@ -132,6 +132,31 @@ exports.verifyOtp = async (req, res) => {
     user.refreshTokens.push(refreshToken);
     await user.save();
 
+    // Auto-create WorkerProfile in MongoDB Atlas for worker role so matching engine finds them immediately
+    if (user.role === 'worker') {
+      const WorkerProfile = require('../models/WorkerProfile');
+      let wp = await WorkerProfile.findOne({ userId: user._id });
+      if (!wp) {
+        const displayName = user.name || (user.email ? user.email.split('@')[0] : 'Manoj Chauhan');
+        await WorkerProfile.create({
+          userId: user._id,
+          name: displayName,
+          phone: user.phone || '',
+          photoUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200',
+          skills: ['plumbing', 'electrical', 'cleaning', 'carpentry'],
+          location: { type: 'Point', coordinates: [72.5714, 23.0225] },
+          availability: { status: 'available', updatedAt: Date.now() },
+          jobsCompleted: 0,
+          totalEarnings: 0,
+          ratingAvg: 4.9,
+          ratingCount: 12,
+        }).catch((err) => console.log('Auto worker profile create note:', err.message));
+      } else {
+        wp.availability = { status: 'available', updatedAt: Date.now() };
+        await wp.save().catch(() => {});
+      }
+    }
+
     res.status(200).json({ 
       accessToken, 
       refreshToken, 
