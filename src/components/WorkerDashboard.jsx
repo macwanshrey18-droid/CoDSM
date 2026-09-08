@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Briefcase, DollarSign, Star, CheckCircle, XCircle, LayoutGrid, Clock, UserCheck, MapPin, Crosshair } from 'lucide-react';
+import { Bell, Briefcase, DollarSign, Star, CheckCircle, XCircle, LayoutGrid, Clock, UserCheck, MapPin, Crosshair, Phone, Navigation, X, ShieldCheck } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { getWorkerProfile, getWorkerEarnings, updateWorkerAvailability } from '../services/api';
@@ -29,6 +29,7 @@ export default function WorkerDashboard({
   incomingRequest,
   onAcceptRequest,
   onDeclineRequest,
+  onNavigateToHouseholdRoute,
   activeBooking,
   onCompleteJob,
   onShowPaymentModal,
@@ -36,6 +37,7 @@ export default function WorkerDashboard({
   onNavigateToProfile
 }) {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [showNotificationDrawer, setShowNotificationDrawer] = useState(false);
   const [coordinates, setCoordinates] = useState([23.0225, 72.5714]);
   const [currentAddress, setCurrentAddress] = useState(workerProfile?.address || 'Navrangpura, Ahmedabad');
   const [gpsDetecting, setGpsDetecting] = useState(false);
@@ -187,22 +189,110 @@ export default function WorkerDashboard({
           </div>
 
           <button
-            onClick={() => {
-              if (incomingRequest) {
-                alert('New service request matched! Click Accept below to accept the job.');
-              } else {
-                alert('No new notifications');
-              }
-            }}
-            className="relative text-slate-500 hover:text-slate-700"
+            onClick={() => setShowNotificationDrawer(true)}
+            className="relative p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors"
+            title="Open Notifications"
           >
             <Bell className="w-5 h-5 text-indigo-900" />
             {incomingRequest && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white animate-pulse"></span>
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white animate-pulse"></span>
             )}
           </button>
         </div>
       </div>
+
+      {/* Notification Drawer / Modal Overlay */}
+      {showNotificationDrawer && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 z-50 animate-fade-in">
+          <div className="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl border border-slate-100 animate-slide-up">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <div className="flex items-center space-x-2">
+                <Bell className="w-5 h-5 text-indigo-600" />
+                <h3 className="text-sm font-bold text-slate-900">Worker Notifications</h3>
+              </div>
+              <button
+                onClick={() => setShowNotificationDrawer(false)}
+                className="p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {incomingRequest ? (
+              <div className="bg-slate-50 rounded-2xl p-4 border border-indigo-100 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                    {incomingRequest.status === 'ACCEPTED' ? 'Approved Request' : 'New Incoming Request'}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-500">Just Now</span>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center">
+                    Customer: {incomingRequest.customer || 'Shrey Macwan'}
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 ml-1" />
+                  </h4>
+                  <p className="text-xs text-indigo-700 font-semibold mt-0.5">{incomingRequest.category || 'Plumbing'} Service</p>
+                  <p className="text-xs text-slate-500 mt-1 flex items-center">
+                    <MapPin className="w-3.5 h-3.5 text-indigo-600 mr-1 shrink-0" />
+                    <span>{incomingRequest.area || 'Navrangpura, Ahmedabad'}</span>
+                  </p>
+                  <p className="text-xs text-slate-600 font-medium mt-1 flex items-center">
+                    <Phone className="w-3.5 h-3.5 text-emerald-600 mr-1 shrink-0" />
+                    <span>{incomingRequest.phone || '+91 98765 43210'}</span>
+                  </p>
+                </div>
+
+                {incomingRequest.status === 'ACCEPTED' ? (
+                  <div className="space-y-2 pt-1">
+                    <div className="bg-emerald-50 text-emerald-800 p-2 rounded-xl text-xs font-bold text-center border border-emerald-200">
+                      ✓ Job Approved! Full household details unlocked.
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowNotificationDrawer(false);
+                        if (onNavigateToHouseholdRoute) onNavigateToHouseholdRoute();
+                      }}
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow"
+                    >
+                      <Navigation className="w-4 h-4" />
+                      <span>View Route & Navigate</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex space-x-2 pt-1">
+                    <button
+                      onClick={() => {
+                        onAcceptRequest(incomingRequest._id || 'req_123');
+                        setShowNotificationDrawer(false);
+                      }}
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 shadow"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Approve Job</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        onDeclineRequest(incomingRequest._id || 'req_123');
+                        setShowNotificationDrawer(false);
+                      }}
+                      className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      <span>Decline</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="py-8 text-center text-slate-500">
+                <Bell className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <p className="text-xs font-medium">No active job notifications right now.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <div className="flex-1 p-4 overflow-y-auto space-y-4">
@@ -256,35 +346,83 @@ export default function WorkerDashboard({
               </div>
             </div>
 
-            {/* Incoming Live Request Card */}
+            {/* Incoming Live Request or Approved Household Details Card */}
             {incomingRequest && (
-              <div className="bg-indigo-900 text-white rounded-2xl p-4 shadow-xl border border-indigo-700 animate-pulse-glow">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="bg-indigo-700 text-indigo-200 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    New Request Matched!
-                  </span>
-                  <span className="text-xs text-emerald-400 font-bold">0.8 km away</span>
-                </div>
-                <h3 className="text-base font-bold mb-1">{incomingRequest.category || 'Plumbing'} Service Required</h3>
-                <p className="text-xs text-indigo-200 mb-4">Household: {incomingRequest.area || 'Navrangpura, Ahmedabad'} • Preferred: Today</p>
+              incomingRequest.status === 'ACCEPTED' ? (
+                <div className="bg-white border-2 border-emerald-500 rounded-2xl p-4 shadow-xl animate-fade-in space-y-3">
+                  <div className="flex justify-between items-start">
+                    <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center">
+                      <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+                      Job Approved • Customer Details
+                    </span>
+                    <span className="text-xs text-emerald-600 font-bold">0.8 km away</span>
+                  </div>
 
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => onAcceptRequest(incomingRequest._id || 'req_123')}
-                    className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 shadow"
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    <span>Accept Job</span>
-                  </button>
-                  <button
-                    onClick={() => onDeclineRequest(incomingRequest._id || 'req_123')}
-                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 border border-slate-700"
-                  >
-                    <XCircle className="w-4 h-4" />
-                    <span>Decline</span>
-                  </button>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 flex items-center">
+                      {incomingRequest.customer || 'Shrey Macwan'}
+                    </h3>
+                    <p className="text-xs text-indigo-600 font-semibold">{incomingRequest.category || 'Plumbing'} Service Required</p>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-1.5 text-xs">
+                    <div className="flex items-center text-slate-700 font-medium">
+                      <Phone className="w-4 h-4 text-emerald-600 mr-2 shrink-0" />
+                      <span>Contact Phone: <strong className="text-slate-900">{incomingRequest.phone || '+91 98765 43210'}</strong></span>
+                    </div>
+                    <div className="flex items-center text-slate-700 font-medium">
+                      <MapPin className="w-4 h-4 text-indigo-600 mr-2 shrink-0" />
+                      <span>Household Address: <strong className="text-slate-900">{incomingRequest.area || 'Navrangpura, Ahmedabad'}</strong></span>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-2 pt-1">
+                    <a
+                      href={`tel:${incomingRequest.phone || '+919876543210'}`}
+                      className="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold py-2.5 px-3 rounded-xl text-xs border border-emerald-200 flex items-center justify-center space-x-1"
+                    >
+                      <Phone className="w-4 h-4" />
+                      <span>Call Customer</span>
+                    </a>
+                    <button
+                      onClick={() => onNavigateToHouseholdRoute && onNavigateToHouseholdRoute()}
+                      className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 shadow"
+                    >
+                      <Navigation className="w-4 h-4" />
+                      <span>Go to Route</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="bg-indigo-900 text-white rounded-2xl p-4 shadow-xl border border-indigo-700 animate-pulse-glow">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="bg-indigo-700 text-indigo-200 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      New Request Received!
+                    </span>
+                    <span className="text-xs text-emerald-400 font-bold">0.8 km away</span>
+                  </div>
+                  <h3 className="text-base font-bold mb-1">{incomingRequest.category || 'Plumbing'} Service Required</h3>
+                  <p className="text-xs text-indigo-200 mb-1">Customer: <strong className="text-white font-bold">{incomingRequest.customer || 'Shrey Macwan'}</strong></p>
+                  <p className="text-xs text-indigo-200 mb-4">Location: {incomingRequest.area || 'Navrangpura, Ahmedabad'}</p>
+
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => onAcceptRequest(incomingRequest._id || 'req_123')}
+                      className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 shadow"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Approve Job</span>
+                    </button>
+                    <button
+                      onClick={() => onDeclineRequest(incomingRequest._id || 'req_123')}
+                      className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 border border-slate-700"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      <span>Decline</span>
+                    </button>
+                  </div>
+                </div>
+              )
             )}
 
             {/* Active Booking in Progress */}

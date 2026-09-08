@@ -10,7 +10,7 @@ const defaultPinIcon = L.divIcon({
   iconAnchor: [14, 14],
 });
 
-export default function HouseholdHome({ userProfile, matchedWorker, activeRequest, onSelectCategory, onNotificationClick, onNavigateToProfile }) {
+export default function HouseholdHome({ userProfile, matchedWorker, activeRequest, bookingStatus, onTrackService, onSelectCategory, onNotificationClick, onNavigateToProfile }) {
   const [activeTab, setActiveTab] = useState('home');
   const [showCoopInfoModal, setShowCoopInfoModal] = useState(false);
   const [coordinates, setCoordinates] = useState([23.0225, 72.5714]);
@@ -176,6 +176,50 @@ export default function HouseholdHome({ userProfile, matchedWorker, activeReques
           </div>
         ) : (
           <>
+            {/* Live Request Status Banners */}
+            {bookingStatus === 'REQUEST_SENT' && (
+              <div className="bg-indigo-900 text-white rounded-2xl p-4 shadow-xl border border-indigo-700 mb-4 animate-pulse-glow">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="bg-indigo-700 text-indigo-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center">
+                    <span className="w-1.5 h-1.5 bg-amber-400 rounded-full mr-1.5 animate-ping"></span>
+                    Request Sent
+                  </span>
+                  <span className="text-xs text-amber-300 font-bold">Pending Approval</span>
+                </div>
+                <h3 className="text-base font-bold mb-1">Request Sent to {matchedWorker?.name || 'Manoj Chauhan'}</h3>
+                <p className="text-xs text-indigo-200 mb-3">
+                  Your plumbing service request has been sent. Waiting for worker confirmation from their notification panel...
+                </p>
+                <div className="bg-indigo-800/80 p-2.5 rounded-xl border border-indigo-700/60 flex items-center justify-between text-xs">
+                  <span className="text-indigo-200 font-medium">Worker Status:</span>
+                  <span className="font-bold text-amber-300">Awaiting Manoj Chauhan Approval...</span>
+                </div>
+              </div>
+            )}
+
+            {bookingStatus === 'ACCEPTED' && (
+              <div className="bg-emerald-900 text-white rounded-2xl p-4 shadow-xl border border-emerald-700 mb-4 animate-slide-up">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="bg-emerald-700 text-emerald-100 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center">
+                    <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-300" />
+                    Request Approved!
+                  </span>
+                  <span className="text-xs text-emerald-300 font-bold">En Route</span>
+                </div>
+                <h3 className="text-base font-bold mb-1">{matchedWorker?.name || 'Manoj Chauhan'} Accepted Your Job!</h3>
+                <p className="text-xs text-emerald-200 mb-3">
+                  The worker has approved your request and has received your address and location details.
+                </p>
+                <button
+                  onClick={() => onTrackService && onTrackService()}
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-2 shadow transition-colors"
+                >
+                  <Clock className="w-4 h-4" />
+                  <span>Track Worker & View Route Map</span>
+                </button>
+              </div>
+            )}
+
             {/* Search Bar */}
             <div className="bg-white rounded-2xl p-3 border border-slate-200 shadow-xs flex items-center space-x-2 mb-4">
               <Search className="w-5 h-5 text-slate-400" />

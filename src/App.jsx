@@ -292,27 +292,34 @@ export default function App() {
   // 7. Confirm Worker Assignment
   const handleConfirmWorker = () => {
     setShowAssignPopup(false);
-    setBookingStatus('MATCHED');
-    setCurrentScreen('worker_en_route');
+    setBookingStatus('REQUEST_SENT');
+    setCurrentScreen('household_home');
 
-    // Trigger Real-Time Notification for Worker
+    // Trigger Real-Time Notification for Worker (Manoj Chauhan)
     setInAppJobAlert({
       _id: activeRequest?._id || 'req_88492',
       category: activeRequest?.category || 'Plumbing',
-      customer: householdProfile.name,
-      phone: householdProfile.phone,
-      area: householdProfile.address,
+      customer: householdProfile?.name || 'Shrey Macwan',
+      phone: householdProfile?.phone || '+91 98765 43210',
+      area: householdProfile?.address || 'Navrangpura, Ahmedabad',
+      status: 'PENDING',
     });
   };
 
   // 8. Worker Accepts Request
   const handleWorkerApproveJob = async () => {
-    setInAppJobAlert(null);
+    setInAppJobAlert((prev) => (prev ? { ...prev, status: 'ACCEPTED' } : {
+      _id: activeRequest?._id || 'req_88492',
+      category: activeRequest?.category || 'Plumbing',
+      customer: householdProfile?.name || 'Shrey Macwan',
+      phone: householdProfile?.phone || '+91 98765 43210',
+      area: householdProfile?.address || 'Navrangpura, Ahmedabad',
+      status: 'ACCEPTED',
+    }));
     setBookingStatus('ACCEPTED');
     if (activeRequest?._id) {
       await acceptWorkerRequest(workerToken, activeRequest._id).catch(() => ({}));
     }
-    setCurrentScreen('route_to_household');
   };
 
   // 9. Worker Starts Job
@@ -391,13 +398,17 @@ export default function App() {
               userProfile={householdProfile}
               matchedWorker={matchedWorker}
               activeRequest={activeRequest}
+              bookingStatus={bookingStatus}
+              onTrackService={() => setCurrentScreen('worker_en_route')}
               onSelectCategory={(catId) => {
                 setSelectedCategory(catId);
                 setCurrentScreen('create_request');
               }}
               onNotificationClick={() => {
-                if (matchedWorker) {
+                if (bookingStatus === 'ACCEPTED') {
                   setCurrentScreen('worker_en_route');
+                } else if (bookingStatus === 'REQUEST_SENT') {
+                  alert(`Request sent to ${matchedWorker?.name || 'Manoj Chauhan'}. Waiting for worker approval...`);
                 } else if (activeRequest) {
                   setCurrentScreen('track_service');
                 } else {
@@ -473,6 +484,7 @@ export default function App() {
               incomingRequest={inAppJobAlert}
               onAcceptRequest={handleWorkerApproveJob}
               onDeclineRequest={() => setInAppJobAlert(null)}
+              onNavigateToHouseholdRoute={() => setCurrentScreen('route_to_household')}
               activeBooking={bookingStatus === 'IN_PROGRESS' ? { _id: activeRequest?._id || 'req_88492' } : null}
               onCompleteJob={handleWorkerMarkComplete}
               onShowPaymentModal={() => setShowPaymentModal(true)}
