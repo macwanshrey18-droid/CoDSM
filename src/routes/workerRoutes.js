@@ -11,17 +11,17 @@ const {
   getWorkerRatings,
   getWorkerEarnings
 } = require('../controllers/workerController');
-const { protect, authorize } = require('../middlewares/auth');
+const { protect } = require('../middlewares/auth');
 
-// Private worker routes
-router.get('/profile', protect, authorize('worker'), getProfile);
-router.put('/profile', protect, authorize('worker'), updateProfile);
-router.put('/availability', protect, authorize('worker'), updateAvailability);
-router.get('/requests', protect, authorize('worker'), getRequests);
-router.post('/requests/:id/accept', protect, authorize('worker'), acceptRequest);
-router.post('/requests/:id/decline', protect, authorize('worker'), declineRequest);
-router.post('/requests/:id/complete', protect, authorize('worker'), completeRequest);
-router.get('/earnings', protect, authorize('worker'), getWorkerEarnings);
+// Private worker routes (authenticated via JWT session token)
+router.get('/profile', protect, getProfile);
+router.put('/profile', protect, updateProfile);
+router.put('/availability', protect, updateAvailability);
+router.get('/requests', protect, getRequests);
+router.post('/requests/:id/accept', protect, acceptRequest);
+router.post('/requests/:id/decline', protect, declineRequest);
+router.post('/requests/:id/complete', protect, completeRequest);
+router.get('/earnings', protect, getWorkerEarnings);
 
 // Public read-only lookups
 router.get('/:id/ratings', protect, getWorkerRatings);
