@@ -220,6 +220,15 @@ export default function App() {
           matchScore: '98% Match',
           photoUrl: matchObj.photoUrl || 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=200',
         });
+
+        // Trigger live request alert banner for worker portal
+        setInAppJobAlert({
+          _id: res?.serviceRequest?._id || 'req_88492',
+          category: requestPayload?.category || 'Plumbing',
+          area: requestPayload?.location?.address || 'Navrangpura, Ahmedabad',
+          price: '₹450',
+          time: 'Today, Asap'
+        });
       } else {
         setMatchedWorker(null);
       }
