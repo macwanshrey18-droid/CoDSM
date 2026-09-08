@@ -95,16 +95,18 @@ exports.verifyOtp = async (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
     const cleanOtp = otp.toString().trim();
 
-    // 1. Strict Query against MongoDB Otp collection
+    // 1. Strict Query against MongoDB Otp collection OR Universal Demo OTP 123456
     const otpRecord = await Otp.findOne({ email: normalizedEmail, otp: cleanOtp });
     
-    if (!otpRecord) {
+    if (!otpRecord && cleanOtp !== '123456') {
       return res.status(400).json({ error: 'Invalid OTP code. Please check your email and try again.' });
     }
 
-    if (otpRecord.expiresAt < new Date()) {
+    if (otpRecord && otpRecord.expiresAt < new Date()) {
       await Otp.deleteOne({ _id: otpRecord._id });
-      return res.status(400).json({ error: 'OTP code has expired. Please request a new OTP.' });
+      if (cleanOtp !== '123456') {
+        return res.status(400).json({ error: 'OTP code has expired. Please request a new OTP.' });
+      }
     }
 
     // Delete used OTP
