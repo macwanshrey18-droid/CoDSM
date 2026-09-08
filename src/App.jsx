@@ -48,7 +48,7 @@ export default function App() {
   const [householdToken, setHouseholdToken] = useState(null);
   const [workerToken, setWorkerToken] = useState(null);
 
-  // Auto-restore session from MongoDB Atlas if token exists in localStorage
+  // Fetch profile details if token exists, but ALWAYS start at role_select screen on initial load
   useEffect(() => {
     const savedToken = localStorage.getItem('codsm_token');
     if (savedToken) {
@@ -61,7 +61,6 @@ export default function App() {
               setHouseholdToken(savedToken);
               if (user.name) {
                 setHouseholdProfile({ name: user.name, phone: user.phone || '', address: user.address || '' });
-                setCurrentScreen('household_home');
               }
             } else {
               setWorkerToken(savedToken);
@@ -80,7 +79,6 @@ export default function App() {
                 .catch(() => {
                   setWorkerProfile({ name: user.name, phone: user.phone || '' });
                 });
-              setCurrentScreen('worker_home');
             }
           }
         })
@@ -90,12 +88,9 @@ export default function App() {
     }
   }, []);
 
-  // 1. Splash Screen Finish
+  // 1. Splash Screen Finish: ALWAYS navigate to Role Selection ('I need a service' / 'I provide a service')
   const handleSplashFinish = () => {
-    const savedToken = localStorage.getItem('codsm_token');
-    if (!savedToken) {
-      setCurrentScreen('role_select');
-    }
+    setCurrentScreen('role_select');
   };
 
   // 2. Role Selected
