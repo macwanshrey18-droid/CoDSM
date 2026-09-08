@@ -22,28 +22,19 @@ export default function EmailAuthModal({ role, onAuthSuccess }) {
       return;
     }
 
-    setLoading(true);
-    setError(null);
     try {
-      await registerUser(email, role);
-      const res = await sendOTP(email).catch(() => null);
-      const activeOtp = res?.otp || '123456';
-      setInfoMessage(`🔑 Verification OTP Code: [ ${activeOtp} ]`);
-      setOtpDigits(activeOtp.split(''));
+      await registerUser(email, role).catch(() => null);
+      const res = await sendOTP(email);
+      if (res && res.otp) {
+        setInfoMessage(`🔑 Generated Verification OTP: [ ${res.otp} ]`);
+        setOtpDigits(res.otp.split(''));
+      } else {
+        setInfoMessage(`Verification OTP code sent to ${email}`);
+        setOtpDigits(['', '', '', '', '', '']);
+      }
       setStep('otp');
     } catch (err) {
-      // Even if user exists, proceed to send OTP
-      try {
-        const res = await sendOTP(email).catch(() => null);
-        const activeOtp = res?.otp || '123456';
-        setInfoMessage(`🔑 Verification OTP Code: [ ${activeOtp} ]`);
-        setOtpDigits(activeOtp.split(''));
-        setStep('otp');
-      } catch (sendErr) {
-        setInfoMessage(`🔑 Verification OTP Code: [ 123456 ]`);
-        setOtpDigits(['1', '2', '3', '4', '5', '6']);
-        setStep('otp');
-      }
+      setError(err.message || 'Failed to send OTP to email. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -109,14 +100,17 @@ export default function EmailAuthModal({ role, onAuthSuccess }) {
     setError(null);
     setLoading(true);
     try {
-      const res = await sendOTP(email).catch(() => null);
-      const activeOtp = res?.otp || '123456';
-      setInfoMessage(`🔑 Verification OTP Code: [ ${activeOtp} ]`);
-      setOtpDigits(activeOtp.split(''));
+      const res = await sendOTP(email);
+      if (res && res.otp) {
+        setInfoMessage(`🔑 New Generated Verification OTP: [ ${res.otp} ]`);
+        setOtpDigits(res.otp.split(''));
+      } else {
+        setInfoMessage(`New OTP code sent to ${email}`);
+        setOtpDigits(['', '', '', '', '', '']);
+      }
       inputRefs[0].current?.focus();
     } catch (err) {
-      setInfoMessage(`🔑 Verification OTP Code: [ 123456 ]`);
-      setOtpDigits(['1', '2', '3', '4', '5', '6']);
+      setError(err.message || 'Failed to resend OTP.');
     } finally {
       setLoading(false);
     }
