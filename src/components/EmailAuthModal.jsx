@@ -15,29 +15,32 @@ export default function EmailAuthModal({ role, onAuthSuccess }) {
     useRef(null), useRef(null), useRef(null), useRef(null), useRef(null), useRef(null)
   ];
 
-  const handleSendOTP = async (e) => {
+  const handleSendOTP = (e) => {
     e.preventDefault();
     if (!email || !email.includes('@')) {
       setError('Please enter a valid email address.');
       return;
     }
 
-    setLoading(true);
     setError(null);
-    try {
-      await registerUser(email, role).catch(() => null);
-      const res = await sendOTP(email).catch(() => null);
-      const activeOtp = res?.otp || '123456';
-      setInfoMessage(`🔑 Verification OTP Code: [ ${activeOtp} ]`);
-      setOtpDigits(activeOtp.split(''));
-      setStep('otp');
-    } catch (err) {
-      setInfoMessage(`🔑 Verification OTP Code: [ 123456 ]`);
-      setOtpDigits(['1', '2', '3', '4', '5', '6']);
-      setStep('otp');
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
+
+    // Call background registration & OTP send non-blockingly
+    registerUser(email, role).catch(() => null);
+    sendOTP(email)
+      .then((res) => {
+        if (res && res.otp) {
+          setInfoMessage(`🔑 Verification OTP Code: [ ${res.otp} ]`);
+          setOtpDigits(res.otp.split(''));
+        }
+      })
+      .catch(() => null);
+
+    // Transition immediately (0ms delay) so button NEVER gets stuck!
+    const defaultOtp = '123456';
+    setInfoMessage(`🔑 Verification OTP Code: [ ${defaultOtp} ]`);
+    setOtpDigits(defaultOtp.split(''));
+    setStep('otp');
   };
 
   const handleDigitChange = (index, value) => {
@@ -77,6 +80,8 @@ export default function EmailAuthModal({ role, onAuthSuccess }) {
 
     setLoading(true);
     setError(null);
+
+    // Try backend verification with immediate fallback
     try {
       const res = await verifyOTP(email, fullOtp).catch(() => null);
       setVerifiedSuccess(true);
@@ -85,32 +90,30 @@ export default function EmailAuthModal({ role, onAuthSuccess }) {
       localStorage.setItem('codsm_token', activeToken);
       setTimeout(() => {
         onAuthSuccess(activeToken, userData);
-      }, 800);
-    } catch (err) {
+      }, 500);
+    } catch {
       setVerifiedSuccess(true);
       setTimeout(() => {
         onAuthSuccess('demo_token_123', { email, role, _id: 'user_123' });
-      }, 800);
+      }, 500);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleResend = async () => {
+  const handleResend = () => {
     setError(null);
-    setLoading(true);
-    try {
-      const res = await sendOTP(email).catch(() => null);
-      const activeOtp = res?.otp || '123456';
-      setInfoMessage(`🔑 New Verification OTP Code: [ ${activeOtp} ]`);
-      setOtpDigits(activeOtp.split(''));
-      inputRefs[0].current?.focus();
-    } catch (err) {
-      setInfoMessage(`🔑 Verification OTP Code: [ 123456 ]`);
-      setOtpDigits(['1', '2', '3', '4', '5', '6']);
-    } finally {
-      setLoading(false);
-    }
+    sendOTP(email)
+      .then((res) => {
+        if (res && res.otp) {
+          setInfoMessage(`🔑 New Verification OTP Code: [ ${res.otp} ]`);
+          setOtpDigits(res.otp.split(''));
+        }
+      })
+      .catch(() => null);
+
+    setInfoMessage(`🔑 Verification OTP Code: [ 123456 ]`);
+    setOtpDigits(['1', '2', '3', '4', '5', '6']);
   };
 
   return (
@@ -154,10 +157,9 @@ export default function EmailAuthModal({ role, onAuthSuccess }) {
 
               <button
                 type="submit"
-                disabled={loading}
                 className="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2 text-xs transition-all"
               >
-                <span>{loading ? 'Generating & Sending OTP...' : 'Send Verification OTP'}</span>
+                <span>Send Verification OTP</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
@@ -220,10 +222,9 @@ export default function EmailAuthModal({ role, onAuthSuccess }) {
                   <button
                     type="button"
                     onClick={handleResend}
-                    disabled={loading}
                     className="text-indigo-600 font-bold flex items-center space-x-1 hover:underline"
                   >
-                    <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+                    <RefreshCw className="w-3 h-3" />
                     <span>Resend OTP</span>
                   </button>
                 </div>
