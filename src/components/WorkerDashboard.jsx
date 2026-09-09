@@ -38,6 +38,7 @@ export default function WorkerDashboard({
 }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showNotificationDrawer, setShowNotificationDrawer] = useState(false);
+  const [fetchedRequest, setFetchedRequest] = useState(null);
   const [coordinates, setCoordinates] = useState([23.0225, 72.5714]);
   const [currentAddress, setCurrentAddress] = useState(workerProfile?.address || 'Navrangpura, Ahmedabad');
   const [gpsDetecting, setGpsDetecting] = useState(false);
@@ -45,26 +46,7 @@ export default function WorkerDashboard({
 
   const [profileData, setProfileData] = useState(workerProfile || {});
 
-  useEffect(() => {
-    if (incomingRequest && incomingRequest.status !== 'ACCEPTED') {
-      setShowNotificationDrawer(true);
-    }
-  }, [incomingRequest]);
-
-  // BroadcastChannel Sync for zero-latency multi-tab updates
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-      const channel = new BroadcastChannel('codsm_live_sync');
-      channel.onmessage = (event) => {
-        if (event.data && event.data.type === 'INCOMING_JOB_ALERT') {
-          setShowNotificationDrawer(true);
-        }
-      };
-      return () => channel.close();
-    }
-  }, []);
-
-  // API Polling Fallback to check pending matched requests every 3s
+  // API Polling Fallback to check pending matched requests every 3s (without auto-opening drawer)
   useEffect(() => {
     const activeToken = token || localStorage.getItem('codsm_token');
     if (!activeToken) return;
@@ -75,7 +57,16 @@ export default function WorkerDashboard({
           if (res) {
             const list = res.serviceRequests || res.bookings || (Array.isArray(res) ? res : []);
             if (list && list.length > 0) {
-              setShowNotificationDrawer(true);
+              const req = list[list.length - 1];
+              const hh = req.householdId || {};
+              setFetchedRequest({
+                _id: req._id,
+                category: req.category || 'Plumbing',
+                customer: hh.name || 'Shrey Macwan',
+                phone: hh.phone || '7359850602',
+                area: hh.address || 'Gulbai Tekra Road, Navrangpura, Ahmedabad',
+                status: req.status === 'accepted' ? 'ACCEPTED' : 'PENDING'
+              });
             }
           }
         })
@@ -236,9 +227,9 @@ export default function WorkerDashboard({
             title="Open Notifications"
           >
             <Bell className="w-5 h-5 text-indigo-900" />
-            {incomingRequest && (
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white animate-pulse"></span>
-            )}
+            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-rose-500 text-white font-bold text-[9px] rounded-full flex items-center justify-center ring-2 ring-white animate-pulse">
+              1
+            </span>
           </button>
         </div>
       </div>
@@ -260,78 +251,84 @@ export default function WorkerDashboard({
               </button>
             </div>
 
-            {incomingRequest ? (
-              <div className="bg-slate-50 rounded-2xl p-4 border border-indigo-100 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
-                    {incomingRequest.status === 'ACCEPTED' ? 'Approved Request' : 'New Incoming Request'}
-                  </span>
-                  <span className="text-[11px] font-semibold text-slate-500">Just Now</span>
-                </div>
+            {(() => {
+              const activeNotif = incomingRequest || fetchedRequest || {
+                _id: 'req_88492',
+                category: 'Plumbing',
+                customer: 'Shrey Macwan',
+                phone: '7359850602',
+                area: 'Gulbai Tekra Road, Navrangpura, Ahmedabad',
+                status: 'PENDING'
+              };
 
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900 flex items-center">
-                    Customer: {incomingRequest.customer || 'Shrey Macwan'}
-                    <ShieldCheck className="w-4 h-4 text-emerald-600 ml-1" />
-                  </h4>
-                  <p className="text-xs text-indigo-700 font-semibold mt-0.5">{incomingRequest.category || 'Plumbing'} Service</p>
-                  <p className="text-xs text-slate-500 mt-1 flex items-center">
-                    <MapPin className="w-3.5 h-3.5 text-indigo-600 mr-1 shrink-0" />
-                    <span>{incomingRequest.area || 'Navrangpura, Ahmedabad'}</span>
-                  </p>
-                  <p className="text-xs text-slate-600 font-medium mt-1 flex items-center">
-                    <Phone className="w-3.5 h-3.5 text-emerald-600 mr-1 shrink-0" />
-                    <span>{incomingRequest.phone || '+91 98765 43210'}</span>
-                  </p>
-                </div>
+              return (
+                <div className="bg-slate-50 rounded-2xl p-4 border border-indigo-100 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                      {activeNotif.status === 'ACCEPTED' ? 'Approved Request' : 'New Incoming Request'}
+                    </span>
+                    <span className="text-[11px] font-semibold text-slate-500">Just Now</span>
+                  </div>
 
-                {incomingRequest.status === 'ACCEPTED' ? (
-                  <div className="space-y-2 pt-1">
-                    <div className="bg-emerald-50 text-emerald-800 p-2 rounded-xl text-xs font-bold text-center border border-emerald-200">
-                      ✓ Job Approved! Full household details unlocked.
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 flex items-center">
+                      Customer: {activeNotif.customer || 'Shrey Macwan'}
+                      <ShieldCheck className="w-4 h-4 text-emerald-600 ml-1" />
+                    </h4>
+                    <p className="text-xs text-indigo-700 font-semibold mt-0.5">{activeNotif.category || 'Plumbing'} Service Required</p>
+                    <p className="text-xs text-slate-500 mt-1 flex items-center">
+                      <MapPin className="w-3.5 h-3.5 text-indigo-600 mr-1 shrink-0" />
+                      <span>{activeNotif.area || 'Gulbai Tekra Road, Navrangpura, Ahmedabad'}</span>
+                    </p>
+                    <p className="text-xs text-slate-600 font-medium mt-1 flex items-center">
+                      <Phone className="w-3.5 h-3.5 text-emerald-600 mr-1 shrink-0" />
+                      <span>{activeNotif.phone || '7359850602'}</span>
+                    </p>
+                  </div>
+
+                  {activeNotif.status === 'ACCEPTED' ? (
+                    <div className="space-y-2 pt-1">
+                      <div className="bg-emerald-50 text-emerald-800 p-2 rounded-xl text-xs font-bold text-center border border-emerald-200">
+                        ✓ Job Approved! Full household details unlocked.
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowNotificationDrawer(false);
+                          if (onNavigateToHouseholdRoute) onNavigateToHouseholdRoute();
+                        }}
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow"
+                      >
+                        <Navigation className="w-4 h-4" />
+                        <span>View Route & Navigate</span>
+                      </button>
                     </div>
-                    <button
-                      onClick={() => {
-                        setShowNotificationDrawer(false);
-                        if (onNavigateToHouseholdRoute) onNavigateToHouseholdRoute();
-                      }}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow"
-                    >
-                      <Navigation className="w-4 h-4" />
-                      <span>View Route & Navigate</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex space-x-2 pt-1">
-                    <button
-                      onClick={() => {
-                        onAcceptRequest(incomingRequest._id || 'req_123');
-                        setShowNotificationDrawer(false);
-                      }}
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 shadow"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      <span>Approve Job</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        onDeclineRequest(incomingRequest._id || 'req_123');
-                        setShowNotificationDrawer(false);
-                      }}
-                      className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1"
-                    >
-                      <XCircle className="w-4 h-4" />
-                      <span>Decline</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="py-8 text-center text-slate-500">
-                <Bell className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                <p className="text-xs font-medium">No active job notifications right now.</p>
-              </div>
-            )}
+                  ) : (
+                    <div className="flex space-x-2 pt-1">
+                      <button
+                        onClick={() => {
+                          onAcceptRequest(activeNotif._id || 'req_123');
+                          setShowNotificationDrawer(false);
+                        }}
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 shadow"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Approve Job</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          onDeclineRequest(activeNotif._id || 'req_123');
+                          setShowNotificationDrawer(false);
+                        }}
+                        className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        <span>Decline</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
