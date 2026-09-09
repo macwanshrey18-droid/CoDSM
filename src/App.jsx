@@ -127,7 +127,7 @@ export default function App() {
     }
   }, [selectedRole]);
 
-  // 2-Minute Timer: Auto-transition 'REQUEST_SENT' to 'ACCEPTED' after 120 seconds if worker hasn't manually responded
+  // 1-Minute Timer: Auto-transition 'REQUEST_SENT' to 'ACCEPTED' after 60 seconds if worker hasn't manually responded
   useEffect(() => {
     let timer;
     if (bookingStatus === 'REQUEST_SENT') {
@@ -142,7 +142,7 @@ export default function App() {
             channel.close();
           } catch {}
         }
-      }, 120000); // 2 minutes (120,000 ms)
+      }, 60000); // 1 minute (60,000 ms)
     }
     return () => {
       if (timer) clearTimeout(timer);

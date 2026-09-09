@@ -17,12 +17,12 @@ export default function HouseholdHome({ userProfile, matchedWorker, activeReques
   const [currentAddress, setCurrentAddress] = useState(userProfile?.address || 'Navrangpura, Ahmedabad');
   const [gpsDetecting, setGpsDetecting] = useState(false);
   const [gpsStatus, setGpsStatus] = useState(null);
-  const [timerSeconds, setTimerSeconds] = useState(120);
+  const [timerSeconds, setTimerSeconds] = useState(60);
 
   useEffect(() => {
     let interval;
     if (bookingStatus === 'REQUEST_SENT') {
-      setTimerSeconds(120);
+      setTimerSeconds(60);
       interval = setInterval(() => {
         setTimerSeconds((prev) => {
           if (prev <= 1) {
