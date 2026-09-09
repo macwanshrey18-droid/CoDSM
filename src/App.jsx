@@ -105,6 +105,20 @@ export default function App() {
     }
   }, []);
 
+  // BroadcastChannel listener for Household to receive live worker approval
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      const channel = new BroadcastChannel('codsm_live_sync');
+      channel.onmessage = (event) => {
+        if (event.data && event.data.type === 'WORKER_APPROVED_JOB' && selectedRole === 'household') {
+          setBookingStatus('ACCEPTED');
+          setShowWorkerApprovedModal(true);
+        }
+      };
+      return () => channel.close();
+    }
+  }, [selectedRole]);
+
   // 1. Splash Screen Finish: ALWAYS navigate to Role Selection ('I need a service' / 'I provide a service')
   const handleSplashFinish = () => {
     setCurrentScreen('role_select');
@@ -347,7 +361,6 @@ export default function App() {
       status: 'ACCEPTED',
     }));
     setBookingStatus('ACCEPTED');
-    setShowWorkerApprovedModal(true);
 
     // Cross-tab broadcast for instant household update
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
@@ -606,7 +619,7 @@ export default function App() {
           )}
 
           {/* Real-time Worker Approved Socket Notification Modal for Household */}
-          {showWorkerApprovedModal && (
+          {showWorkerApprovedModal && selectedRole === 'household' && (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
               <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl border border-slate-100 animate-slide-up space-y-4">
                 <div className="mx-auto w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shadow-inner">
