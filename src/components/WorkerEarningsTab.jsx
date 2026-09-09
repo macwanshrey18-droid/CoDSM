@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { DollarSign, Briefcase, Star, ArrowUpRight, RefreshCw, Calendar, ArrowLeft, TrendingUp, Info, ChevronRight } from 'lucide-react';
+import { DollarSign, Briefcase, Star, ArrowUpRight, RefreshCw, Calendar, ArrowLeft, TrendingUp, Info, ChevronRight, HeartHandshake, ShieldCheck, PiggyBank } from 'lucide-react';
 import { getWorkerEarnings } from '../services/api';
 
 export default function WorkerEarningsTab({ token, workerProfile, onBack }) {
@@ -78,6 +78,7 @@ export default function WorkerEarningsTab({ token, workerProfile, onBack }) {
 
   const currentTotalEarnings = workerProfile?.totalEarnings || earnings.totalThisMonth || 5600;
   const currentJobsCompleted = workerProfile?.jobsCompleted || earnings.jobsCompleted || 13;
+  const welfareFundCollected = currentJobsCompleted * 20;
 
   return (
     <div className="w-full h-full bg-slate-50 flex flex-col justify-between overflow-y-auto p-4 space-y-4 animate-fade-in">
@@ -127,8 +128,64 @@ export default function WorkerEarningsTab({ token, workerProfile, onBack }) {
               <span className="text-xs font-bold text-white">{currentJobsCompleted} Jobs</span>
             </div>
             <div>
-              <span className="text-[10px] text-indigo-300 block font-medium">Avg Rating</span>
-              <span className="text-xs font-bold text-amber-400">★ {workerProfile?.ratingAvg || earnings.ratingAvg || 4.9}</span>
+              <span className="text-[10px] text-indigo-300 block font-medium">Welfare Fund</span>
+              <span className="text-xs font-bold text-emerald-400">₹{welfareFundCollected}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Cooperative Welfare Fund Collection Card */}
+        <div className="bg-gradient-to-r from-emerald-900 via-teal-950 to-slate-900 text-white rounded-2xl p-4 shadow-lg border border-emerald-500/40 mb-4 animate-fade-in relative overflow-hidden">
+          <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
+
+          <div className="flex justify-between items-start mb-2">
+            <div className="flex items-center space-x-2">
+              <div className="p-1.5 bg-emerald-500/20 text-emerald-300 rounded-xl border border-emerald-400/30">
+                <HeartHandshake className="w-4.5 h-4.5" />
+              </div>
+              <div>
+                <span className="text-[11px] font-extrabold text-emerald-300 uppercase tracking-wider block">Welfare Fund Collection</span>
+                <span className="text-[10px] text-slate-300 font-medium">₹20 added per completed job</span>
+              </div>
+            </div>
+            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-500/30">
+              +{welfareFundCollected} Total
+            </span>
+          </div>
+
+          <div className="flex items-baseline justify-between mt-2">
+            <div>
+              <h4 className="text-2xl font-extrabold text-white tracking-tight">
+                ₹{welfareFundCollected.toLocaleString()}
+              </h4>
+              <p className="text-[10px] text-emerald-200/90 font-medium mt-0.5">
+                Accumulated across {currentJobsCompleted} completed jobs
+              </p>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] font-extrabold text-amber-300 bg-amber-950/70 border border-amber-500/30 px-2 py-1 rounded-lg inline-block shadow-xs">
+                Protected Pool 🛡️
+              </span>
+            </div>
+          </div>
+
+          {/* Progress bar towards next Welfare Milestone */}
+          <div className="mt-3 pt-3 border-t border-emerald-800/60">
+            <div className="flex justify-between text-[9px] text-emerald-300 font-bold mb-1">
+              <span>Welfare Target Progress (₹500)</span>
+              <span>{Math.min(100, Math.round((welfareFundCollected / 500) * 100))}% Reached</span>
+            </div>
+            <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-emerald-500/30 p-0.5">
+              <div
+                className="bg-gradient-to-r from-emerald-400 to-teal-300 h-full rounded-full transition-all duration-500 shadow-xs"
+                style={{ width: `${Math.min(100, Math.round((welfareFundCollected / 500) * 100))}%` }}
+              ></div>
+            </div>
+            <div className="flex justify-between items-center text-[9px] text-slate-300 mt-1.5">
+              <span className="flex items-center text-emerald-300 font-medium">
+                <ShieldCheck className="w-3 h-3 mr-1 text-emerald-400" /> Healthcare & Emergency Safety Pool
+              </span>
+              <span className="font-bold text-emerald-400">+₹20 next job</span>
             </div>
           </div>
         </div>
@@ -266,7 +323,7 @@ export default function WorkerEarningsTab({ token, workerProfile, onBack }) {
                     <span className="text-amber-800 font-bold flex items-center">
                       ★ {job.rating}.0 <span className="text-slate-500 font-normal ml-1">"{job.comment}"</span>
                     </span>
-                    <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded">Verified Paid</span>
+                    <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded">Verified Paid • Welfare +₹20</span>
                   </div>
                 )}
               </div>
