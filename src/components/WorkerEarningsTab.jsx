@@ -4,26 +4,26 @@ import { getWorkerEarnings } from '../services/api';
 
 export default function WorkerEarningsTab({ token, workerProfile, onBack }) {
   const [earnings, setEarnings] = useState({
-    totalThisWeek: 14850,
-    totalThisMonth: workerProfile?.totalEarnings || 34250,
-    jobsCompleted: workerProfile?.jobsCompleted || 48,
+    totalThisWeek: 3200,
+    totalThisMonth: workerProfile?.totalEarnings || 5600,
+    jobsCompleted: workerProfile?.jobsCompleted || 13,
     ratingAvg: workerProfile?.ratingAvg || 4.9,
-    ratingCount: workerProfile?.ratingCount || 42,
+    ratingCount: workerProfile?.ratingCount || 13,
     pastJobs: [
-      { id: 'job_100', category: 'Plumbing Emergency Leak', customerArea: 'Gulbai Tekra, Ahmedabad', date: 'Today', amount: 800, rating: 5, comment: 'Punctual and very fast work!' },
-      { id: 'job_101', category: 'Plumbing Pipe Fitting', customerArea: 'Navrangpura, Ahmedabad', date: 'Yesterday', amount: 950, rating: 5, comment: 'Fixed pipe leak quickly!' },
-      { id: 'job_102', category: 'Electrical Repair', customerArea: 'Ambawadi, Ahmedabad', date: '3 days ago', amount: 1400, rating: 5, comment: 'Very skilled and polite' },
-      { id: 'job_103', category: 'Appliance Maintenance', customerArea: 'Satellite, Ahmedabad', date: '5 days ago', amount: 1200, rating: 5, comment: 'Great service quality' },
-      { id: 'job_104', category: 'Emergency Fitting', customerArea: 'Bodakdev, Ahmedabad', date: 'Last week', amount: 850, rating: 5, comment: 'Clean work and punctual' },
+      { id: 'job_100', category: 'Plumbing Repair (Shrey Macwan)', customerArea: 'Gulbai Tekra, Ahmedabad', date: 'Just now', amount: 800, rating: 5, comment: 'Punctual and very fast work!' },
+      { id: 'job_101', category: 'Plumbing Pipe Leak Repair', customerArea: 'Navrangpura, Ahmedabad', date: 'Yesterday', amount: 450, rating: 5, comment: 'Fixed pipe leak quickly!' },
+      { id: 'job_102', category: 'Tap & Sink Installation', customerArea: 'Ambawadi, Ahmedabad', date: '3 days ago', amount: 650, rating: 5, comment: 'Very skilled and polite' },
+      { id: 'job_103', category: 'Bathroom Drainage Repair', customerArea: 'Satellite, Ahmedabad', date: '5 days ago', amount: 500, rating: 5, comment: 'Great service quality' },
+      { id: 'job_104', category: 'Water Tank Pipe Fitting', customerArea: 'Bodakdev, Ahmedabad', date: 'Last week', amount: 800, rating: 5, comment: 'Clean work and punctual' },
     ],
     dailyBreakdown: [
-      { day: 'Mon', dateLabel: 'Sep 2', amount: 1488, jobsCount: 2, isToday: false },
-      { day: 'Tue', dateLabel: 'Sep 3', amount: 2232, jobsCount: 3, isToday: false },
-      { day: 'Wed', dateLabel: 'Sep 4', amount: 1860, jobsCount: 2, isToday: false },
-      { day: 'Thu', dateLabel: 'Sep 5', amount: 2728, jobsCount: 3, isToday: false },
-      { day: 'Fri', dateLabel: 'Sep 6', amount: 1984, jobsCount: 2, isToday: false },
-      { day: 'Sat', dateLabel: 'Sep 7', amount: 2108, jobsCount: 2, isToday: false },
-      { day: 'Sun', dateLabel: 'Sep 8', amount: 1420, jobsCount: 2, isToday: true },
+      { day: 'Mon', dateLabel: 'Sep 2', amount: 450, jobsCount: 1, isToday: false },
+      { day: 'Tue', dateLabel: 'Sep 3', amount: 650, jobsCount: 1, isToday: false },
+      { day: 'Wed', dateLabel: 'Sep 4', amount: 500, jobsCount: 1, isToday: false },
+      { day: 'Thu', dateLabel: 'Sep 5', amount: 0, jobsCount: 0, isToday: false },
+      { day: 'Fri', dateLabel: 'Sep 6', amount: 800, jobsCount: 1, isToday: false },
+      { day: 'Sat', dateLabel: 'Sep 7', amount: 0, jobsCount: 0, isToday: false },
+      { day: 'Sun', dateLabel: 'Sep 8', amount: 800, jobsCount: 1, isToday: true },
     ],
   });
 
@@ -35,12 +35,12 @@ export default function WorkerEarningsTab({ token, workerProfile, onBack }) {
     const activeToken = token || localStorage.getItem('codsm_token');
     if (activeToken) {
       const res = await getWorkerEarnings(activeToken).catch(() => null);
-      if (res && (res.pastJobs || res.totalThisWeek !== undefined)) {
+      if (res && res.jobsCompleted) {
         setEarnings((prev) => ({
           ...prev,
           ...res,
-          totalThisMonth: res.totalThisMonth || workerProfile?.totalEarnings || prev.totalThisMonth,
-          jobsCompleted: res.jobsCompleted || workerProfile?.jobsCompleted || prev.jobsCompleted,
+          totalThisMonth: workerProfile?.totalEarnings || res.totalThisMonth || prev.totalThisMonth,
+          jobsCompleted: workerProfile?.jobsCompleted || res.jobsCompleted || prev.jobsCompleted,
         }));
       } else if (workerProfile) {
         setEarnings((prev) => ({
@@ -55,7 +55,7 @@ export default function WorkerEarningsTab({ token, workerProfile, onBack }) {
 
   useEffect(() => {
     handleRefresh();
-  }, [token]);
+  }, [token, workerProfile]);
 
   // Normalize dailyBreakdown array (supports both raw numbers and object arrays)
   const breakdownList = (earnings.dailyBreakdown || []).map((item, idx) => {
@@ -75,6 +75,9 @@ export default function WorkerEarningsTab({ token, workerProfile, onBack }) {
   const maxAmount = Math.max(...breakdownList.map((d) => d.amount || 0), 1000);
   const selectedDay = breakdownList[selectedDayIdx] || breakdownList[breakdownList.length - 1] || { day: 'Today', amount: 0, jobsCount: 0 };
   const dailyAverage = earnings.totalThisWeek > 0 ? Math.round(earnings.totalThisWeek / 7) : 0;
+
+  const currentTotalEarnings = workerProfile?.totalEarnings || earnings.totalThisMonth || 5600;
+  const currentJobsCompleted = workerProfile?.jobsCompleted || earnings.jobsCompleted || 13;
 
   return (
     <div className="w-full h-full bg-slate-50 flex flex-col justify-between overflow-y-auto p-4 space-y-4 animate-fade-in">
@@ -104,26 +107,28 @@ export default function WorkerEarningsTab({ token, workerProfile, onBack }) {
         <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-4 shadow-xl border border-indigo-700/50 mb-4">
           <div className="flex justify-between items-start mb-2">
             <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest flex items-center">
-              <TrendingUp className="w-3 h-3 mr-1 text-emerald-400" /> Total Earnings (This Week)
+              <TrendingUp className="w-3 h-3 mr-1 text-emerald-400" /> Total Cumulative Earnings
             </span>
             <span className="text-emerald-400 text-xs font-bold flex items-center bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30">
-              {earnings.totalThisWeek > 0 ? '+14%' : '₹0'} <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
+              +14% <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
             </span>
           </div>
-          <h3 className="text-2xl font-extrabold text-white mb-3 tracking-tight">₹{earnings.totalThisWeek.toLocaleString()}</h3>
+          <h3 className="text-2xl font-extrabold text-white mb-3 tracking-tight">
+            ₹{currentTotalEarnings.toLocaleString()}
+          </h3>
 
           <div className="grid grid-cols-3 gap-2 pt-2 border-t border-indigo-800/80 text-center">
             <div>
-              <span className="text-[10px] text-indigo-300 block font-medium">This Month</span>
-              <span className="text-xs font-bold text-white">₹{earnings.totalThisMonth.toLocaleString()}</span>
+              <span className="text-[10px] text-indigo-300 block font-medium">This Week</span>
+              <span className="text-xs font-bold text-white">₹{(earnings.totalThisWeek || 3200).toLocaleString()}</span>
             </div>
             <div>
               <span className="text-[10px] text-indigo-300 block font-medium">Jobs Done</span>
-              <span className="text-xs font-bold text-white">{earnings.jobsCompleted} Jobs</span>
+              <span className="text-xs font-bold text-white">{currentJobsCompleted} Jobs</span>
             </div>
             <div>
               <span className="text-[10px] text-indigo-300 block font-medium">Avg Rating</span>
-              <span className="text-xs font-bold text-amber-400">★ {earnings.ratingAvg ? earnings.ratingAvg : 'New'}</span>
+              <span className="text-xs font-bold text-amber-400">★ {workerProfile?.ratingAvg || earnings.ratingAvg || 4.9}</span>
             </div>
           </div>
         </div>
