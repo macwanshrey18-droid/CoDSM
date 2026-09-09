@@ -88,12 +88,16 @@ exports.getRequests = async (req, res) => {
     const profile = await WorkerProfile.findOne({ userId: req.user._id });
     if (!profile) return res.status(404).json({ error: 'Profile not found' });
 
-    // Find bookings where status is matched for this worker
-    const requests = await Booking.find({ workerId: profile._id, status: 'matched' })
+    // Find bookings for this worker
+    const bookings = await Booking.find({ workerId: profile._id })
       .populate('serviceRequestId')
-      .populate('householdId', 'phone');
+      .populate('householdId', 'name phone address');
       
-    res.status(200).json(requests);
+    // Find service requests matched to this worker
+    const serviceRequests = await ServiceRequest.find({ matchedWorkerId: profile._id })
+      .populate('householdId', 'name phone address');
+
+    res.status(200).json({ bookings, serviceRequests });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -101,23 +105,37 @@ exports.getRequests = async (req, res) => {
 
 exports.acceptRequest = async (req, res) => {
   try {
-    const booking = await Booking.findById(req.params.id);
-    if (!booking) return res.status(404).json({ error: 'Booking not found' });
-    
     const profile = await WorkerProfile.findOne({ userId: req.user._id });
-    if (booking.workerId.toString() !== profile._id.toString()) {
-      return res.status(403).json({ error: 'Not authorized' });
+    let booking = await Booking.findById(req.params.id);
+    
+    if (!booking) {
+      const serviceReq = await ServiceRequest.findById(req.params.id);
+      if (serviceReq) {
+        booking = new Booking({
+          serviceRequestId: serviceReq._id,
+          householdId: serviceReq.householdId,
+          workerId: profile ? profile._id : serviceReq.matchedWorkerId,
+          status: 'accepted',
+          timestamps: { acceptedAt: Date.now() }
+        });
+        await booking.save();
+        serviceReq.status = 'accepted';
+        await serviceReq.save();
+      } else {
+        return res.status(404).json({ error: 'Request not found' });
+      }
+    } else {
+      booking.status = 'accepted';
+      booking.timestamps.acceptedAt = Date.now();
+      await booking.save();
+    }
+    
+    if (profile) {
+      profile.currentActiveJobs += 1;
+      await profile.save();
     }
 
-    booking.status = 'accepted';
-    booking.timestamps.acceptedAt = Date.now();
-    await booking.save();
-    
-    // Update active jobs
-    profile.currentActiveJobs += 1;
-    await profile.save();
-
-    // Notify household
+    // Notify household via socket
     notifyHouseholdStatusUpdate(req.app.get('io'), booking.householdId, booking);
 
     res.status(200).json(booking);
