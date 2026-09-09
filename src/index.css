@@ -48,7 +48,8 @@
 /* Mobile Frame Container Styling - 100% Edge-to-Edge Native Mobile Look on Mobile Devices */
 .mobile-device-frame {
   width: 100%;
-  height: 100dvh;
+  height: 100vh;
+  min-height: 100%;
   position: relative;
   background-color: #f8fafc;
 }
