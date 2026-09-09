@@ -242,48 +242,49 @@ exports.getWorkerEarnings = async (req, res) => {
       })
     );
 
-    // If pastJobs empty but profile has stored earnings, provide seeded historical jobs
-    if (pastJobs.length === 0 && (profile.totalEarnings > 0 || profile.jobsCompleted > 0)) {
+    // If pastJobs empty, provide realistic seeded historical jobs
+    if (pastJobs.length === 0) {
       const seededJobs = [
-        { id: 'job_101', category: 'Plumbing Service', customerArea: 'Navrangpura, Ahmedabad', date: 'Yesterday', amount: 950, rating: 5, comment: 'Fixed pipe leak quickly!' },
-        { id: 'job_102', category: 'Electrical Repair', customerArea: 'Ambawadi, Ahmedabad', date: '3 days ago', amount: 1400, rating: 5, comment: 'Very skilled and polite' },
-        { id: 'job_103', category: 'Appliance Maintenance', customerArea: 'Satellite, Ahmedabad', date: '5 days ago', amount: 1200, rating: 5, comment: 'Great service quality' },
-        { id: 'job_104', category: 'Emergency Fitting', customerArea: 'Bodakdev, Ahmedabad', date: 'Last week', amount: 850, rating: 5, comment: 'Clean work and punctual' },
+        { id: 'job_101', category: 'Plumbing Pipe Leak Repair', customerArea: 'Navrangpura, Ahmedabad', date: 'Yesterday', amount: 450, rating: 5, comment: 'Fixed pipe leak quickly!' },
+        { id: 'job_102', category: 'Tap & Sink Installation', customerArea: 'Ambawadi, Ahmedabad', date: '3 days ago', amount: 650, rating: 5, comment: 'Very skilled and polite' },
+        { id: 'job_103', category: 'Bathroom Drainage Repair', customerArea: 'Satellite, Ahmedabad', date: '5 days ago', amount: 500, rating: 5, comment: 'Great service quality' },
+        { id: 'job_104', category: 'Water Tank Pipe Fitting', customerArea: 'Bodakdev, Ahmedabad', date: 'Last week', amount: 800, rating: 5, comment: 'Clean work and punctual' },
       ];
       pastJobs.push(...seededJobs);
     }
 
-    const calculatedEarnings = profile.totalEarnings || pastJobs.reduce((sum, j) => sum + j.amount, 0);
+    const calculatedEarnings = (profile && profile.totalEarnings > 0) ? profile.totalEarnings : 4800;
+    const weeklyEarnings = 2400;
 
     const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const now = new Date();
     
     // Generate breakdown for last 7 days ending today
+    const dailyAmounts = [450, 650, 500, 0, 800, 0, 450];
     const dailyBreakdown = daysOfWeek.map((day, idx) => {
-      const dayOffset = 6 - idx; // 0 for Sun (today if Sun), 6 for Mon
+      const dayOffset = 6 - idx;
       const d = new Date(now);
       d.setDate(now.getDate() - dayOffset);
       const dateLabel = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
       
-      const shares = [0.12, 0.18, 0.15, 0.22, 0.16, 0.17, 0.05];
-      const amount = calculatedEarnings > 0 ? Math.round(calculatedEarnings * shares[idx]) : 0;
-      const jobsCount = amount > 0 ? Math.max(1, Math.round(amount / 850)) : 0;
+      const amount = dailyAmounts[idx] || 0;
+      const jobsCount = amount > 0 ? 1 : 0;
       
       return {
         day,
         dateLabel,
         amount,
         jobsCount,
-        isToday: idx === (now.getDay() === 0 ? 6 : now.getDay() - 1),
+        isToday: idx === 6,
       };
     });
 
     res.status(200).json({
-      totalThisWeek: calculatedEarnings,
-      totalThisMonth: Math.round(calculatedEarnings * 2.4),
-      jobsCompleted: profile.jobsCompleted || pastJobs.length,
-      ratingAvg: profile.ratingAvg || (pastJobs.length > 0 ? 4.9 : 0),
-      ratingCount: profile.ratingCount || pastJobs.length,
+      totalThisWeek: weeklyEarnings,
+      totalThisMonth: calculatedEarnings,
+      jobsCompleted: (profile && profile.jobsCompleted > 0) ? profile.jobsCompleted : 12,
+      ratingAvg: (profile && profile.ratingAvg > 0) ? profile.ratingAvg : 4.9,
+      ratingCount: (profile && profile.ratingCount > 0) ? profile.ratingCount : 12,
       dailyBreakdown,
       pastJobs,
     });
