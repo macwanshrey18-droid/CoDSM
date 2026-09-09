@@ -440,7 +440,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-2 sm:p-6 text-slate-900">
+    <div className="min-h-screen h-dvh w-full bg-slate-50 sm:bg-slate-950 flex flex-col items-center justify-center p-0 sm:p-6 text-slate-900 overflow-hidden">
       {/* Outer Title */}
       <div className="text-center mb-3 hidden sm:block">
         <h1 className="text-xl font-extrabold text-white tracking-tight flex items-center justify-center space-x-2">
