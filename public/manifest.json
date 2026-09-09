@@ -1,11 +1,13 @@
 {
   "short_name": "CoDSM",
   "name": "CoDSM - Cooperative Digital Service Management",
+  "description": "Direct digital access to verified local labor cooperatives and skilled service providers.",
   "icons": [
     {
       "src": "/favicon.svg",
       "type": "image/svg+xml",
-      "sizes": "192x192 512x512"
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/",
