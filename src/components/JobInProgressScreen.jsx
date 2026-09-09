@@ -17,7 +17,7 @@ export default function JobInProgressScreen({ booking, onMarkComplete }) {
           </div>
           <h3 className="text-base font-extrabold text-slate-900">Job In Progress</h3>
           <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto">
-            Currently executing service request for <strong className="text-slate-900">Shrey Macwan</strong> (Plumbing Maintenance).
+            Currently executing service request for <strong className="text-slate-900">{booking?.customer || booking?.userName || booking?.customerName || 'Shrey Macwan'}</strong> ({booking?.serviceName || booking?.category || 'Plumbing Maintenance'}).
           </p>
         </div>
 
@@ -25,11 +25,11 @@ export default function JobInProgressScreen({ booking, onMarkComplete }) {
         <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-2 text-xs">
           <div className="flex justify-between border-b border-slate-100 pb-2">
             <span className="text-slate-500 font-bold">Category</span>
-            <span className="font-extrabold text-indigo-900">Plumbing Repair</span>
+            <span className="font-extrabold text-indigo-900">{booking?.serviceName || booking?.category || 'Plumbing Repair'}</span>
           </div>
           <div className="flex justify-between border-b border-slate-100 pb-2">
             <span className="text-slate-500 font-bold">Customer</span>
-            <span className="font-bold text-slate-800">Priya S.</span>
+            <span className="font-bold text-slate-800">{booking?.customer || booking?.userName || booking?.customerName || 'Shrey Macwan'}</span>
           </div>
           <div className="flex justify-between border-b border-slate-100 pb-2">
             <span className="text-slate-500 font-bold">Cooperative Welfare Fee</span>

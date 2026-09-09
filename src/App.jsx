@@ -601,13 +601,22 @@ export default function App() {
 
           {/* Screen 19: Route-to-Household Map */}
           {currentScreen === 'route_to_household' && (
-            <RouteToHouseholdMap onStartJob={handleWorkerStartJob} />
+            <RouteToHouseholdMap
+              booking={inAppJobAlert || activeRequest || { customer: householdProfile?.name || 'Shrey Macwan', category: 'Plumbing Repair' }}
+              onStartJob={handleWorkerStartJob}
+            />
           )}
 
           {/* Screen 20 & 21: Job In Progress Timer */}
           {currentScreen === 'job_in_progress' && (
             <JobInProgressScreen
-              booking={{ _id: activeRequest?._id || 'req_88492' }}
+              booking={{
+                _id: activeRequest?._id || inAppJobAlert?._id || 'req_88492',
+                customer: inAppJobAlert?.customer || activeRequest?.customer || householdProfile?.name || 'Shrey Macwan',
+                category: inAppJobAlert?.category || activeRequest?.category || 'Plumbing Repair',
+                ...inAppJobAlert,
+                ...activeRequest
+              }}
               onMarkComplete={handleWorkerMarkComplete}
             />
           )}

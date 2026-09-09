@@ -17,7 +17,7 @@ const destPinIcon = L.divIcon({
   iconAnchor: [16, 16],
 });
 
-export default function RouteToHouseholdMap({ onStartJob }) {
+export default function RouteToHouseholdMap({ onStartJob, booking }) {
   const workerPos = [23.0280, 72.5800];
   const householdPos = [23.0225, 72.5714];
   const polylineCoords = [workerPos, householdPos];
@@ -53,8 +53,8 @@ export default function RouteToHouseholdMap({ onStartJob }) {
       <div className="bg-white p-4 shadow-2xl border-t border-slate-200 z-20">
         <div className="flex items-center justify-between mb-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
           <div>
-            <h4 className="text-xs font-bold text-slate-900">Customer: Priya S.</h4>
-            <p className="text-[10px] text-slate-500">Plumbing Repair • 0.8 km</p>
+            <h4 className="text-xs font-bold text-slate-900">Customer: {booking?.customer || booking?.userName || booking?.customerName || 'Shrey Macwan'}</h4>
+            <p className="text-[10px] text-slate-500">{booking?.category || booking?.serviceName || 'Plumbing Repair'} • 0.8 km</p>
           </div>
           <button className="p-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold flex items-center space-x-1">
             <Phone className="w-3.5 h-3.5" />

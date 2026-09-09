@@ -14,7 +14,7 @@ export default function IncomingRequestDetails({ request, onApprove, onDecline, 
   const req = request || {
     _id: 'req_88492',
     category: 'Plumbing',
-    customer: 'Priya S.',
+    customer: 'Shrey Macwan',
     area: 'Navrangpura, Ahmedabad',
     distance: '0.8 km away',
     time: 'Today, 4:00 PM',
