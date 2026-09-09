@@ -46,6 +46,12 @@ export default function WorkerDashboard({
   const [profileData, setProfileData] = useState(workerProfile || {});
 
   useEffect(() => {
+    if (incomingRequest && incomingRequest.status !== 'ACCEPTED') {
+      setShowNotificationDrawer(true);
+    }
+  }, [incomingRequest]);
+
+  useEffect(() => {
     const activeToken = token || localStorage.getItem('codsm_token');
     if (activeToken) {
       getWorkerProfile(activeToken)
