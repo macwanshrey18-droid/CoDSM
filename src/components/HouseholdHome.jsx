@@ -17,6 +17,26 @@ export default function HouseholdHome({ userProfile, matchedWorker, activeReques
   const [currentAddress, setCurrentAddress] = useState(userProfile?.address || 'Navrangpura, Ahmedabad');
   const [gpsDetecting, setGpsDetecting] = useState(false);
   const [gpsStatus, setGpsStatus] = useState(null);
+  const [timerSeconds, setTimerSeconds] = useState(120);
+
+  useEffect(() => {
+    let interval;
+    if (bookingStatus === 'REQUEST_SENT') {
+      setTimerSeconds(120);
+      interval = setInterval(() => {
+        setTimerSeconds((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [bookingStatus]);
 
   const detectPreciseLocation = () => {
     if (!('geolocation' in navigator)) {
@@ -192,7 +212,9 @@ export default function HouseholdHome({ userProfile, matchedWorker, activeReques
                 </p>
                 <div className="bg-indigo-800/80 p-2.5 rounded-xl border border-indigo-700/60 flex items-center justify-between text-xs">
                   <span className="text-indigo-200 font-medium">Worker Status:</span>
-                  <span className="font-bold text-amber-300">Awaiting Manoj Chauhan Approval...</span>
+                  <span className="font-bold text-amber-300">
+                    Awaiting {matchedWorker?.name || 'Manoj Chauhan'} Approval ({Math.floor(timerSeconds / 60)}:{(timerSeconds % 60).toString().padStart(2, '0')})
+                  </span>
                 </div>
               </div>
             )}
@@ -206,7 +228,7 @@ export default function HouseholdHome({ userProfile, matchedWorker, activeReques
                   </span>
                   <span className="text-xs text-emerald-300 font-bold">En Route</span>
                 </div>
-                <h3 className="text-base font-bold mb-1">{matchedWorker?.name || 'Manoj Chauhan'} Accepted Your Job!</h3>
+                <h3 className="text-base font-bold mb-1">{matchedWorker?.name || 'Manoj Chauhan'} Accepted your job and is on his way!</h3>
                 <p className="text-xs text-emerald-200 mb-3">
                   The worker has approved your request and has received your address and location details.
                 </p>

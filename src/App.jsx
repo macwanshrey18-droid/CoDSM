@@ -119,6 +119,28 @@ export default function App() {
     }
   }, [selectedRole]);
 
+  // 2-Minute Timer: Auto-transition 'REQUEST_SENT' to 'ACCEPTED' after 120 seconds if worker hasn't manually responded
+  useEffect(() => {
+    let timer;
+    if (bookingStatus === 'REQUEST_SENT') {
+      timer = setTimeout(() => {
+        setBookingStatus('ACCEPTED');
+        setShowWorkerApprovedModal(true);
+        setInAppJobAlert((prev) => (prev ? { ...prev, status: 'ACCEPTED' } : null));
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          try {
+            const channel = new BroadcastChannel('codsm_live_sync');
+            channel.postMessage({ type: 'WORKER_APPROVED_JOB', bookingData: { status: 'ACCEPTED' } });
+            channel.close();
+          } catch {}
+        }
+      }, 120000); // 2 minutes (120,000 ms)
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [bookingStatus]);
+
   // 1. Splash Screen Finish: ALWAYS navigate to Role Selection ('I need a service' / 'I provide a service')
   const handleSplashFinish = () => {
     setCurrentScreen('role_select');
