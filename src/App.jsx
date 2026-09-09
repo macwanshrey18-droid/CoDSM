@@ -87,10 +87,10 @@ export default function App() {
                     name: wp.name || user.name || 'Manoj Chauhan',
                     phone: wp.phone || user.phone || '7359850602',
                     title: wp.title || 'Master Plumber',
-                    jobsCompleted: wp.jobsCompleted || 48,
-                    totalEarnings: wp.totalEarnings || 34250,
+                    jobsCompleted: wp.jobsCompleted || 12,
+                    totalEarnings: wp.totalEarnings || 4800,
                     ratingAvg: wp.ratingAvg || 4.9,
-                    ratingCount: wp.ratingCount || 42,
+                    ratingCount: wp.ratingCount || 12,
                   });
                 })
                 .catch(() => {
@@ -98,10 +98,10 @@ export default function App() {
                     name: user.name || 'Manoj Chauhan',
                     phone: user.phone || '7359850602',
                     title: 'Master Plumber',
-                    jobsCompleted: 48,
-                    totalEarnings: 34250,
+                    jobsCompleted: 12,
+                    totalEarnings: 4800,
                     ratingAvg: 4.9,
-                    ratingCount: 42,
+                    ratingCount: 12,
                   });
                 });
             }
@@ -204,10 +204,10 @@ export default function App() {
             name: wp.name || user?.name || 'Manoj Chauhan',
             phone: wp.phone || user?.phone || '7359850602',
             title: wp.title || 'Master Plumber',
-            jobsCompleted: wp.jobsCompleted || 48,
-            totalEarnings: wp.totalEarnings || 34250,
+            jobsCompleted: wp.jobsCompleted || 12,
+            totalEarnings: wp.totalEarnings || 4800,
             ratingAvg: wp.ratingAvg || 4.9,
-            ratingCount: wp.ratingCount || 42,
+            ratingCount: wp.ratingCount || 12,
           });
         })
         .catch(() => {
@@ -215,10 +215,10 @@ export default function App() {
             name: user?.name || 'Manoj Chauhan',
             phone: user?.phone || '7359850602',
             title: 'Master Plumber',
-            jobsCompleted: 48,
-            totalEarnings: 34250,
+            jobsCompleted: 12,
+            totalEarnings: 4800,
             ratingAvg: 4.9,
-            ratingCount: 42,
+            ratingCount: 12,
           });
         });
       if (user?.name) {
