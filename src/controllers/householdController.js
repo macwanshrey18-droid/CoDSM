@@ -29,10 +29,12 @@ exports.createRequest = async (req, res) => {
       if (match.userId) {
         notifyWorkerMatched(req.app.get('io'), match.userId, {
           _id: serviceRequest._id,
-          category: serviceRequest.category,
+          category: serviceRequest.category || 'Plumbing',
+          customer: req.user.name || 'Shrey Macwan',
+          phone: req.user.phone || '+91 98765 43210',
+          area: req.user.address || 'Navrangpura, Ahmedabad',
           location: serviceRequest.location,
           requestedTime: serviceRequest.requestedTime,
-          householdPhone: req.user.phone,
           price: '₹450'
         });
       }
@@ -88,7 +90,11 @@ exports.confirmWorker = async (req, res) => {
     if (workerProfile) {
       notifyWorkerMatched(req.app.get('io'), workerProfile.userId, {
         bookingId: booking._id,
-        category: serviceRequest.category,
+        _id: booking._id,
+        category: serviceRequest.category || 'Plumbing',
+        customer: req.user.name || 'Shrey Macwan',
+        phone: req.user.phone || '+91 98765 43210',
+        area: req.user.address || 'Navrangpura, Ahmedabad',
         location: serviceRequest.location,
         requestedTime: serviceRequest.requestedTime,
         householdPhone: req.user.phone

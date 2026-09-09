@@ -1,15 +1,20 @@
 // Socket Service to encapsulate emitting events
 
 const notifyWorkerMatched = (io, workerUserId, requestData) => {
-  // workerUserId is the user._id to which the worker's client is joined
   if (io) {
-    io.to(workerUserId.toString()).emit('incoming_request', requestData);
+    if (workerUserId) {
+      io.to(workerUserId.toString()).emit('incoming_request', requestData);
+    }
+    io.emit('incoming_request', requestData);
   }
 };
 
 const notifyHouseholdStatusUpdate = (io, householdUserId, bookingData) => {
   if (io) {
-    io.to(householdUserId.toString()).emit('booking_update', bookingData);
+    if (householdUserId) {
+      io.to(householdUserId.toString()).emit('booking_update', bookingData);
+    }
+    io.emit('booking_update', bookingData);
   }
 };
 
