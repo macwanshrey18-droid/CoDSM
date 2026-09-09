@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Bell, Briefcase, DollarSign, Star, CheckCircle, XCircle, LayoutGrid, Clock, UserCheck, MapPin, Crosshair, Phone, Navigation, X, ShieldCheck } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { getWorkerProfile, getWorkerEarnings, updateWorkerAvailability } from '../services/api';
+import { getWorkerProfile, getWorkerEarnings, updateWorkerAvailability, getWorkerRequests } from '../services/api';
 
 const defaultPinIcon = L.divIcon({
   className: 'custom-pin',
@@ -50,6 +50,42 @@ export default function WorkerDashboard({
       setShowNotificationDrawer(true);
     }
   }, [incomingRequest]);
+
+  // BroadcastChannel Sync for zero-latency multi-tab updates
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      const channel = new BroadcastChannel('codsm_live_sync');
+      channel.onmessage = (event) => {
+        if (event.data && event.data.type === 'INCOMING_JOB_ALERT') {
+          setShowNotificationDrawer(true);
+        }
+      };
+      return () => channel.close();
+    }
+  }, []);
+
+  // API Polling Fallback to check pending matched requests every 3s
+  useEffect(() => {
+    const activeToken = token || localStorage.getItem('codsm_token');
+    if (!activeToken) return;
+
+    const checkRequests = () => {
+      getWorkerRequests(activeToken)
+        .then((res) => {
+          if (res) {
+            const list = res.serviceRequests || res.bookings || (Array.isArray(res) ? res : []);
+            if (list && list.length > 0) {
+              setShowNotificationDrawer(true);
+            }
+          }
+        })
+        .catch(() => ({}));
+    };
+
+    checkRequests();
+    const interval = setInterval(checkRequests, 3000);
+    return () => clearInterval(interval);
+  }, [token]);
 
   useEffect(() => {
     const activeToken = token || localStorage.getItem('codsm_token');

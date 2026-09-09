@@ -315,15 +315,25 @@ export default function App() {
     setBookingStatus('REQUEST_SENT');
     setCurrentScreen('household_home');
 
-    // Trigger Real-Time Notification for Worker (Manoj Chauhan)
-    setInAppJobAlert({
+    const alertData = {
       _id: activeRequest?._id || 'req_88492',
       category: activeRequest?.category || 'Plumbing',
       customer: householdProfile?.name || 'Shrey Macwan',
       phone: householdProfile?.phone || '+91 98765 43210',
       area: householdProfile?.address || 'Navrangpura, Ahmedabad',
       status: 'PENDING',
-    });
+    };
+
+    setInAppJobAlert(alertData);
+
+    // Cross-tab broadcast for instant multi-window sync
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        const channel = new BroadcastChannel('codsm_live_sync');
+        channel.postMessage({ type: 'INCOMING_JOB_ALERT', alertData });
+        channel.close();
+      } catch {}
+    }
   };
 
   // 8. Worker Accepts Request
@@ -337,6 +347,17 @@ export default function App() {
       status: 'ACCEPTED',
     }));
     setBookingStatus('ACCEPTED');
+    setShowWorkerApprovedModal(true);
+
+    // Cross-tab broadcast for instant household update
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        const channel = new BroadcastChannel('codsm_live_sync');
+        channel.postMessage({ type: 'WORKER_APPROVED_JOB', bookingData: { status: 'ACCEPTED' } });
+        channel.close();
+      } catch {}
+    }
+
     if (activeRequest?._id) {
       await acceptWorkerRequest(workerToken, activeRequest._id).catch(() => ({}));
     }
