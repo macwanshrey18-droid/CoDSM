@@ -460,15 +460,6 @@ export default function App() {
           />
         )}
 
-        {/* Global In-App Worker Alert Notification */}
-        {inAppJobAlert && selectedRole === 'worker' && (
-          <NewJobNotificationBanner
-            request={inAppJobAlert}
-            onViewDetails={() => setCurrentScreen('incoming_details')}
-            onDismiss={() => setInAppJobAlert(null)}
-          />
-        )}
-
         {/* Screen Routing Engine */}
         <div className="flex-1 relative overflow-hidden bg-slate-50">
           {/* Screen 1: Splash */}
