@@ -2,38 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { Clock, CheckCircle, ShieldCheck } from 'lucide-react';
 
 export default function JobInProgressScreen({ booking, onMarkComplete }) {
-  const [seconds, setSeconds] = useState(120); // 02:00 elapsed counter
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSeconds((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatTime = (totalSec) => {
-    const mins = Math.floor(totalSec / 60);
-    const secs = totalSec % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
   return (
     <div className="w-full h-full bg-slate-50 flex flex-col justify-between overflow-y-auto p-4 animate-fade-in">
       <div>
-        <div className="bg-amber-100 border border-amber-300 text-amber-900 px-3 py-1.5 rounded-full text-xs font-bold text-center mb-4 flex items-center justify-center space-x-1.5">
-          <span className="w-2 h-2 rounded-full bg-amber-600 animate-ping"></span>
+        <div className="bg-emerald-100 border border-emerald-300 text-emerald-900 px-3 py-1.5 rounded-full text-xs font-bold text-center mb-4 flex items-center justify-center space-x-1.5">
+          <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
           <span>Job Status: IN PROGRESS</span>
         </div>
 
-        {/* Elapsed Timer Counter */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-md text-center mb-5">
-          <div className="w-14 h-14 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-2">
-            <Clock className="w-7 h-7" />
+        {/* Active Job Status Banner */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-md text-center mb-5 space-y-2">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-1">
+            <ShieldCheck className="w-6 h-6" />
           </div>
-          <span className="text-3xl font-extrabold text-slate-900 tracking-wider block font-mono">
-            {formatTime(seconds)}
-          </span>
-          <span className="text-xs text-slate-500 font-medium">Elapsed Service Time</span>
+          <h3 className="text-base font-extrabold text-slate-900">Job In Progress</h3>
+          <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto">
+            Currently executing service request for <strong className="text-slate-900">Shrey Macwan</strong> (Plumbing Maintenance).
+          </p>
         </div>
 
         {/* Job Details */}

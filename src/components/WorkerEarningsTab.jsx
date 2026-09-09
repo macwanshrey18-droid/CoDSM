@@ -2,15 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { DollarSign, Briefcase, Star, ArrowUpRight, RefreshCw, Calendar, ArrowLeft, TrendingUp, Info, ChevronRight } from 'lucide-react';
 import { getWorkerEarnings } from '../services/api';
 
-export default function WorkerEarningsTab({ token, onBack }) {
+export default function WorkerEarningsTab({ token, workerProfile, onBack }) {
   const [earnings, setEarnings] = useState({
-    totalThisWeek: 12400,
-    totalThisMonth: 29760,
-    jobsCompleted: 14,
-    ratingAvg: 4.9,
-    ratingCount: 14,
+    totalThisWeek: 14850,
+    totalThisMonth: workerProfile?.totalEarnings || 34250,
+    jobsCompleted: workerProfile?.jobsCompleted || 48,
+    ratingAvg: workerProfile?.ratingAvg || 4.9,
+    ratingCount: workerProfile?.ratingCount || 42,
     pastJobs: [
-      { id: 'job_101', category: 'Plumbing Service', customerArea: 'Navrangpura, Ahmedabad', date: 'Yesterday', amount: 950, rating: 5, comment: 'Fixed pipe leak quickly!' },
+      { id: 'job_100', category: 'Plumbing Emergency Leak', customerArea: 'Gulbai Tekra, Ahmedabad', date: 'Today', amount: 800, rating: 5, comment: 'Punctual and very fast work!' },
+      { id: 'job_101', category: 'Plumbing Pipe Fitting', customerArea: 'Navrangpura, Ahmedabad', date: 'Yesterday', amount: 950, rating: 5, comment: 'Fixed pipe leak quickly!' },
       { id: 'job_102', category: 'Electrical Repair', customerArea: 'Ambawadi, Ahmedabad', date: '3 days ago', amount: 1400, rating: 5, comment: 'Very skilled and polite' },
       { id: 'job_103', category: 'Appliance Maintenance', customerArea: 'Satellite, Ahmedabad', date: '5 days ago', amount: 1200, rating: 5, comment: 'Great service quality' },
       { id: 'job_104', category: 'Emergency Fitting', customerArea: 'Bodakdev, Ahmedabad', date: 'Last week', amount: 850, rating: 5, comment: 'Clean work and punctual' },
@@ -22,7 +23,7 @@ export default function WorkerEarningsTab({ token, onBack }) {
       { day: 'Thu', dateLabel: 'Sep 5', amount: 2728, jobsCount: 3, isToday: false },
       { day: 'Fri', dateLabel: 'Sep 6', amount: 1984, jobsCount: 2, isToday: false },
       { day: 'Sat', dateLabel: 'Sep 7', amount: 2108, jobsCount: 2, isToday: false },
-      { day: 'Sun', dateLabel: 'Sep 8', amount: 620, jobsCount: 1, isToday: true },
+      { day: 'Sun', dateLabel: 'Sep 8', amount: 1420, jobsCount: 2, isToday: true },
     ],
   });
 
@@ -35,7 +36,18 @@ export default function WorkerEarningsTab({ token, onBack }) {
     if (activeToken) {
       const res = await getWorkerEarnings(activeToken).catch(() => null);
       if (res && (res.pastJobs || res.totalThisWeek !== undefined)) {
-        setEarnings((prev) => ({ ...prev, ...res }));
+        setEarnings((prev) => ({
+          ...prev,
+          ...res,
+          totalThisMonth: res.totalThisMonth || workerProfile?.totalEarnings || prev.totalThisMonth,
+          jobsCompleted: res.jobsCompleted || workerProfile?.jobsCompleted || prev.jobsCompleted,
+        }));
+      } else if (workerProfile) {
+        setEarnings((prev) => ({
+          ...prev,
+          totalThisMonth: workerProfile.totalEarnings || prev.totalThisMonth,
+          jobsCompleted: workerProfile.jobsCompleted || prev.jobsCompleted,
+        }));
       }
     }
     setRefreshing(false);

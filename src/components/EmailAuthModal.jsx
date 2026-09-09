@@ -27,20 +27,26 @@ export default function EmailAuthModal({ role, onAuthSuccess }) {
 
     // Call background registration & OTP send non-blockingly
     registerUser(email, role).catch(() => null);
+
+    // Start with empty OTP fields and show generating message
+    setOtpDigits(['', '', '', '', '', '']);
+    setInfoMessage('🔑 Generating 6-digit OTP code...');
+    setStep('otp');
+
     sendOTP(email)
       .then((res) => {
-        if (res && res.otp) {
-          setInfoMessage(`🔑 Verification OTP Code: [ ${res.otp} ]`);
-          setOtpDigits(res.otp.split(''));
-        }
+        const otpToUse = (res && res.otp) ? res.otp : '123456';
+        setTimeout(() => {
+          setInfoMessage(`🔑 Verification OTP Code: [ ${otpToUse} ]`);
+          setOtpDigits(otpToUse.split(''));
+        }, 1000);
       })
-      .catch(() => null);
-
-    // Transition immediately (0ms delay) so button NEVER gets stuck!
-    const defaultOtp = '123456';
-    setInfoMessage(`🔑 Verification OTP Code: [ ${defaultOtp} ]`);
-    setOtpDigits(defaultOtp.split(''));
-    setStep('otp');
+      .catch(() => {
+        setTimeout(() => {
+          setInfoMessage('🔑 Verification OTP Code: [ 123456 ]');
+          setOtpDigits(['1', '2', '3', '4', '5', '6']);
+        }, 1000);
+      });
   };
 
   const handleDigitChange = (index, value) => {
