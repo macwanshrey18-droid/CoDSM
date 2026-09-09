@@ -37,12 +37,20 @@ export function subscribeToIncomingRequests(userId, callback) {
   };
 }
 
+export function subscribeToBookingUpdates(userId, callback) {
+  const s = initSocket(userId);
+  s.on('booking_update', callback);
+  return () => {
+    s.off('booking_update', callback);
+  };
+}
+
 export function subscribeToRequest(requestId, callback) {
   const s = initSocket();
   const eventName = `request_status_${requestId}`;
   s.on(eventName, callback);
   return () => {
-    s.off('incoming_request', callback);
+    s.off(eventName, callback);
   };
 }
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { CheckCircle, Clock } from 'lucide-react';
 import Navbar from './components/Navbar';
 import SplashScreen from './components/SplashScreen';
 import RoleSelection from './components/RoleSelection';
@@ -24,7 +25,7 @@ import WorkerEarningsTab from './components/WorkerEarningsTab';
 import WorkerProfileEdit from './components/WorkerProfileEdit';
 
 import { createServiceRequest, acceptWorkerRequest, completeWorkerRequest, getUserProfile, deleteUserAccount, getWorkerProfile } from './services/api';
-import { initSocket, subscribeToIncomingRequests } from './services/socket';
+import { initSocket, subscribeToIncomingRequests, subscribeToBookingUpdates } from './services/socket';
 
 export default function App() {
   // Navigation State
@@ -35,6 +36,7 @@ export default function App() {
   const [showAssignPopup, setShowAssignPopup] = useState(false);
   const [showRateModal, setShowRateModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showWorkerApprovedModal, setShowWorkerApprovedModal] = useState(false);
   const [inAppJobAlert, setInAppJobAlert] = useState(null);
 
   // Data & Tokens
@@ -61,6 +63,15 @@ export default function App() {
             setSelectedRole(roleToUse);
             if (roleToUse === 'household') {
               setHouseholdToken(savedToken);
+              if (user._id) {
+                subscribeToBookingUpdates(user._id, (bookingData) => {
+                  console.log('Real-time household booking update received:', bookingData);
+                  if (bookingData && (bookingData.status === 'accepted' || bookingData.status === 'ACCEPTED')) {
+                    setBookingStatus('ACCEPTED');
+                    setShowWorkerApprovedModal(true);
+                  }
+                });
+              }
               if (user.name) {
                 setHouseholdProfile({ name: user.name, phone: user.phone || '', address: user.address || '' });
               }
@@ -120,6 +131,15 @@ export default function App() {
 
     if (roleToUse === 'household') {
       setHouseholdToken(token);
+      if (user?._id) {
+        subscribeToBookingUpdates(user._id, (bookingData) => {
+          console.log('Real-time household booking update received:', bookingData);
+          if (bookingData && (bookingData.status === 'accepted' || bookingData.status === 'ACCEPTED')) {
+            setBookingStatus('ACCEPTED');
+            setShowWorkerApprovedModal(true);
+          }
+        });
+      }
       if (user?.name) {
         setHouseholdProfile({ name: user.name, phone: user.phone || '', address: user.address || '' });
         setCurrentScreen('household_home');
@@ -562,6 +582,49 @@ export default function App() {
               }}
               onClose={() => setShowRateModal(false)}
             />
+          )}
+
+          {/* Real-time Worker Approved Socket Notification Modal for Household */}
+          {showWorkerApprovedModal && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
+              <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl border border-slate-100 animate-slide-up space-y-4">
+                <div className="mx-auto w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shadow-inner">
+                  <CheckCircle className="w-9 h-9 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                    {matchedWorker?.name || 'Manoj Chauhan'} Approved Your Request! 🎉
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    {matchedWorker?.name || 'Manoj Chauhan'} has accepted your service request and is currently on his way to your location ({householdProfile?.address || 'Navrangpura, Ahmedabad'}).
+                  </p>
+                </div>
+
+                <div className="bg-emerald-50 rounded-2xl p-3 border border-emerald-200 text-xs font-semibold text-emerald-800 flex items-center justify-center space-x-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                  <span>Worker En Route • Live Tracking Active</span>
+                </div>
+
+                <div className="flex space-x-2 pt-1">
+                  <button
+                    onClick={() => {
+                      setShowWorkerApprovedModal(false);
+                      setCurrentScreen('worker_en_route');
+                    }}
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow transition-colors"
+                  >
+                    <Clock className="w-4 h-4 text-white" />
+                    <span>Track Worker on Route</span>
+                  </button>
+                  <button
+                    onClick={() => setShowWorkerApprovedModal(false)}
+                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-3 rounded-xl text-xs transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Screen 3 Payment Received Modal */}
