@@ -1,18 +1,47 @@
 {
+  "id": "/",
   "short_name": "CoDSM",
   "name": "CoDSM - Cooperative Digital Service Management",
   "description": "Direct digital access to verified local labor cooperatives and skilled service providers.",
-  "icons": [
-    {
-      "src": "/favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "192x192 512x512",
-      "purpose": "any maskable"
-    }
-  ],
+  "categories": ["utilities", "business", "productivity"],
   "start_url": "/",
   "background_color": "#0f172a",
   "theme_color": "#4f46e5",
   "display": "standalone",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "CoDSM Household Service Booking"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "CoDSM Worker Management Dashboard"
+    }
+  ]
 }
